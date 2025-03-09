@@ -10,6 +10,7 @@ import StudentProfile from './pages/Profile'
 import CounselorAttendancePage from './adminPages/Attendance'
 import AcademicAnalysis from './pages/Analysis'
 import AddCourses from './adminPages/AddCourse'
+import Protected from './pages/Protected'
 
 // I am creating "Student Carrer Counselling using academic performance data analysis" project using MERN.
 
@@ -23,7 +24,7 @@ function App() {
       <Routes>
         <Route path='/login' element={<Login/>}></Route>
         <Route path='/register' element={<Signup/>}></Route>
-        <Route path='/' element={<Home/>}></Route>
+        <Route path='/' element={<Protected><Home/></Protected>}></Route>
         <Route path='/attendance' element={<AttendancePage/>}></Route>
         <Route path='/profile' element={<StudentProfile/>}></Route>
         <Route path='/analysis' element={<AcademicAnalysis/>}></Route>

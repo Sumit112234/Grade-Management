@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 // import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, Plus, Edit, Save, X } from 'lucide-react';
+import { LogOut, Plus, Edit, Save, X,Camera } from 'lucide-react';
+import { useStudent } from '../context/userContext';
+import { updateStudent } from '../utils/userHandler';
 
 const AddSkillModal = ({ isOpen, onClose, onSave }) => {
   const [skillName, setSkillName] = useState('');
@@ -172,23 +174,37 @@ const AddExtracurricularModal = ({ isOpen, onClose, onSave }) => {
 const StudentProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [student, setStudent] = useState(null);
+  const [studentdata, setStudentData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('skills');
+  const { student } = useStudent();
 
 
   const [isSkillModalOpen, setIsSkillModalOpen] = useState(false);
   const [isExtracurricularModalOpen, setIsExtracurricularModalOpen] = useState(false);
-  
+  const fileInputRef = React.useRef(null);
+  const [isHoveringProfilePic, setIsHoveringProfilePic] = useState(false);
+const [profileImage, setProfileImage] = useState(null);
 
-  const handleLogout = () => {
-    // Clear local storage, cookies, or any auth tokens
-    localStorage.removeItem('token');
-    // Redirect to login page
-    navigate('/login');
+
+
+  const handleProfileImageChange = async(e) => {
+    if (e.target.files && e.target.files[0]) {
+      
+      const file = e.target.files[0];
+      // console.log(file);
+      setProfileImage(URL.createObjectURL(file));
+      const formData = new FormData();
+      formData.append("avatar", file);
+      let data = await updateStudent(formData);
+      if (data) {
+        // toast.success(data);
+        alert(data);
+      }
+     
+    }
   };
-
   const handleSaveSkill = async (skillData) => {
     try {
       // API call to save skill would go here
@@ -198,7 +214,7 @@ const StudentProfile = () => {
         proficiency: skillData.proficiency
       };
       
-      setStudent(prev => ({
+      setStudentData(prev => ({
         ...prev,
         skills: [...prev.skills, newSkill]
       }));
@@ -223,7 +239,7 @@ const StudentProfile = () => {
         details: activityData.details
       };
       
-      setStudent(prev => ({
+      setStudentData(prev => ({
         ...prev,
         extracurricularActivities: [...prev.extracurricularActivities, newActivity]
       }));
@@ -235,7 +251,7 @@ const StudentProfile = () => {
     }
   };
 
-// Dummy student data for testing StudentProfile component
+// Dummy studentdata data for testing StudentProfile component
 const studentData = {
   id: "S12345",
   name: "Alex Johnson",
@@ -482,11 +498,11 @@ useEffect(() => {
       setLoading(true);
       // Simulating API delay
       setTimeout(() => {
-        setStudent(studentData);
+        setStudentData(studentData);
         setLoading(false);
       }, 1000);
     } catch (err) {
-      setError('Failed to fetch student data');
+      setError('Failed to fetch studentdata data');
       setLoading(false);
     }
   };
@@ -494,41 +510,43 @@ useEffect(() => {
   fetchStudentData();
 }, [id]);
 
-  if (loading) return <div className="flex justify-center items-center h-screen">Loading student profile...</div>;
+  if (loading) return <div className="flex justify-center items-center h-screen">Loading studentdata profile...</div>;
   if (error) return <div className="text-red-500 text-center p-4">{error}</div>;
-  if (!student) return <div className="text-center p-4">No student found with this ID.</div>;
+  if (!studentdata) return <div className="text-center p-4">No studentdata found with this ID.</div>;
 
   // Calculate overall academic performance
   const calculateOverallPerformance = () => {
-    if (!student.academicRecords || student.academicRecords.length === 0) return 0;
+    if (!studentdata.academicRecords || studentdata.academicRecords.length === 0) return 0;
     
-    const totalPercentage = student.academicRecords.reduce((sum, record) => {
+    const totalPercentage = studentdata.academicRecords.reduce((sum, record) => {
       return sum + (record.marks / record.totalMarks) * 100;
     }, 0);
     
-    return (totalPercentage / student.academicRecords.length).toFixed(2);
+    return (totalPercentage / studentdata.academicRecords.length).toFixed(2);
   };
 
   // Calculate attendance percentage
   const calculateAttendancePercentage = () => {
-    if (!student.attendance || student.attendance.length === 0) return 0;
+    if (!studentdata.attendance || studentdata.attendance.length === 0) return 0;
     
-    const presentCount = student.attendance.filter(
+    const presentCount = studentdata.attendance.filter(
       record => record.status === "Present" || record.status === "Late"
     ).length;
     
-    return ((presentCount / student.attendance.length) * 100).toFixed(2);
+    return ((presentCount / studentdata.attendance.length) * 100).toFixed(2);
   };
 
   // Get attendance status counts
   const getAttendanceStatusCounts = () => {
-    if (!student.attendance) return {};
+    if (!studentdata.attendance) return {};
     
-    return student.attendance.reduce((counts, record) => {
+    return studentdata.attendance.reduce((counts, record) => {
       counts[record.status] = (counts[record.status] || 0) + 1;
       return counts;
     }, {});
   };
+
+  
 
   const attendanceStatusCounts = getAttendanceStatusCounts();
   const overallPerformance = calculateOverallPerformance();
@@ -642,32 +660,53 @@ useEffect(() => {
       initial="hidden"
       animate="visible"
     >
-    <div className="fixed top-4 right-4 z-10">
-        <button 
-          onClick={handleLogout}
-          className="flex items-center px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
-        >
-          <LogOut className="w-4 h-4 mr-2" />
-          Logout
-        </button>
-      </div>
+    
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-20">
-        {/* Student Basic Info Card */}
+        {/* studentdata Basic Info Card */}
         <Card className="lg:col-span-1">
           <CardHeader>
-            <CardTitle>Student Information</CardTitle>
+            <CardTitle>studentdata Information</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <motion.div 
-                className="h-32 w-32 mx-auto bg-gray-200 rounded-full flex items-center justify-center text-3xl font-bold text-gray-600"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 0.5, type: "spring" }}
-              >
-                {student.name.charAt(0)}
-              </motion.div>
+{/* Replace the existing profile circle div with this */}
+<motion.div 
+  className="relative h-32 w-32 mx-auto rounded-full overflow-hidden flex items-center justify-center text-3xl font-bold text-gray-600"
+  initial={{ scale: 0 }}
+  animate={{ scale: 1 }}
+  transition={{ duration: 0.5, type: "spring" }}
+  onMouseEnter={() => setIsHoveringProfilePic(true)}
+  onMouseLeave={() => setIsHoveringProfilePic(false)}
+  onClick={() => fileInputRef.current.click()}
+  style={{ cursor: 'pointer' }}
+>
+  {profileImage ? (
+    <img src={profileImage} alt="Profile" className="h-full w-full object-cover" />
+  ) : student.profilePic ? (
+    <img src={student.profilePic} alt="Profile" className="h-full w-full object-cover" />
+  ) : (
+    <div className="h-full w-full bg-gray-200 flex items-center justify-center">
+      {student?.name?.charAt(0)}
+    </div>
+  )}
+  
+  {/* Camera icon overlay on hover */}
+  {isHoveringProfilePic && (
+    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <Camera className="text-white w-10 h-10" />
+    </div>
+  )}
+  
+  {/* Hidden file input */}
+  <input
+    type="file"
+    ref={fileInputRef}
+    className="hidden"
+    accept="image/*"
+    onChange={handleProfileImageChange}
+  />
+</motion.div>
               
               <div className="text-center">
                 <motion.h2 
@@ -676,7 +715,7 @@ useEffect(() => {
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.3 }}
                 >
-                  {student.name}
+                  {studentdata.name}
                 </motion.h2>
                 <motion.p 
                   className="text-gray-500"
@@ -684,7 +723,7 @@ useEffect(() => {
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.4 }}
                 >
-                  Grade: {student.grade}
+                  Grade: {studentdata.grade}
                 </motion.p>
               </div>
               
@@ -696,7 +735,7 @@ useEffect(() => {
                   transition={{ delay: 0.5 }}
                 >
                   <span className="font-medium">Email:</span>
-                  <span>{student.email}</span>
+                  <span>{studentdata.email}</span>
                 </motion.div>
                 <motion.div 
                   className="flex justify-between"
@@ -705,7 +744,7 @@ useEffect(() => {
                   transition={{ delay: 0.6 }}
                 >
                   <span className="font-medium">Phone:</span>
-                  <span>{student.phone}</span>
+                  <span>{studentdata.phone}</span>
                 </motion.div>
                 <motion.div 
                   className="flex justify-between"
@@ -714,7 +753,7 @@ useEffect(() => {
                   transition={{ delay: 0.7 }}
                 >
                   <span className="font-medium">Age:</span>
-                  <span>{student.age} years</span>
+                  <span>{studentdata.age} years</span>
                 </motion.div>
               </div>
             </div>
@@ -742,7 +781,7 @@ useEffect(() => {
             </div>
             
             <div className="space-y-4">
-              {student.academicRecords && student.academicRecords.length > 0 ? (
+              {studentdata.academicRecords && studentdata.academicRecords.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
@@ -755,7 +794,7 @@ useEffect(() => {
                       </tr>
                     </thead>
                     <tbody>
-                      {student.academicRecords.map((record, index) => (
+                      {studentdata.academicRecords.map((record, index) => (
                         <motion.tr 
                           key={index} 
                           className="border-b"
@@ -812,14 +851,14 @@ useEffect(() => {
                 </button>
               </div>
               
-              {student?.skills && student.skills.length > 0 ? (
+              {studentdata?.skills && studentdata.skills.length > 0 ? (
                 <motion.div 
                   className="grid grid-cols-1 md:grid-cols-3 gap-4"
                   variants={containerVariants}
                   initial="hidden"
                   animate="visible"
                 >
-                  {student.skills.map((skill, index) => (
+                  {studentdata.skills.map((skill, index) => (
                     <Card key={index}>
                       <CardContent className="p-4">
                         <div className="flex justify-between items-center">
@@ -854,14 +893,14 @@ useEffect(() => {
               className="p-4 border rounded-md"
             >
               <h3 className="text-xl font-semibold mb-4">Enrolled Courses</h3>
-              {student.courses && student.courses.length > 0 ? (
+              {studentdata.courses && studentdata.courses.length > 0 ? (
                 <motion.div 
                   className="space-y-4"
                   variants={containerVariants}
                   initial="hidden"
                   animate="visible"
                 >
-                  {student.courses.map((course, index) => (
+                  {studentdata.courses.map((course, index) => (
                     <Card key={index}>
                       <CardContent className="p-4">
                         <div className="flex justify-between items-start">
@@ -908,14 +947,14 @@ useEffect(() => {
                 </button>
               </div>
               
-              {student?.extracurricularActivities && student.extracurricularActivities.length > 0 ? (
+              {studentdata?.extracurricularActivities && studentdata.extracurricularActivities.length > 0 ? (
                 <motion.div 
                   className="grid grid-cols-1 md:grid-cols-2 gap-4"
                   variants={containerVariants}
                   initial="hidden"
                   animate="visible"
                 >
-                  {student.extracurricularActivities.map((activity, index) => (
+                  {studentdata.extracurricularActivities.map((activity, index) => (
                     <Card key={index}>
                       <CardContent className="p-4">
                         <h4 className="font-semibold">{activity.activityName}</h4>
@@ -999,7 +1038,7 @@ useEffect(() => {
                     <CardTitle>Recent Attendance</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {student.attendance && student.attendance.length > 0 ? (
+                    {studentdata.attendance && studentdata.attendance.length > 0 ? (
                       <div className="max-h-64 overflow-y-auto">
                         <table className="w-full">
                           <thead>
@@ -1009,7 +1048,7 @@ useEffect(() => {
                             </tr>
                           </thead>
                           <tbody>
-                            {student.attendance.slice(0, 10).map((record, index) => (
+                            {studentdata.attendance.slice(0, 10).map((record, index) => (
                               <motion.tr 
                                 key={index} 
                                 className="border-b"
@@ -1116,10 +1155,10 @@ export default StudentProfile;
 
 
 
-// In this  profile page add options to add Skills and extracurricular activities by student and also add logout button using following schemas.
+// In this  profile page add options to add Skills and extracurricular activities by studentdata and also add logout button using following schemas.
 // Do not show all the component only show changes that you made. 
 
-// I am creating "Student Carrer Counselling using academic performance data analysis" project using MERN.
+// I am creating "studentdata Carrer Counselling using academic performance data analysis" project using MERN.
 // const studentSchema = new mongoose.Schema(
 //   {
 //     name: { type: String, required: true },
@@ -1140,6 +1179,6 @@ export default StudentProfile;
 //   { timestamps: true }
 // );
 
-// const Student = mongoose.model("Student", studentSchema);
-// export default Student;
-//   const academicSchema = new mongoose.Schema(   {     studentId: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true },     subject: { type: String, required: true },     code : {type :String , required : true},     marks: { type: Number, required: true },     totalMarks: { type: Number, required: true },     grade: { type: String, required: true },     year: { type: Number, required: true },   }, const attendanceSchema = new mongoose.Schema(   {     studentId: {       type: mongoose.Schema.Types.ObjectId,       ref: "Student",       required: true,     },     date: {       type: Date,       required: true,     },     status: {       type: String,       enum: ["Present", "Absent", "Late", "Excused"],       required: true,     },   }, const courseSchema = new mongoose.Schema(   {     studentId: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true },     courseName: { type: String, required: true },     institution: { type: String, required: true },     amount: { type: Number, required: true },     department: { type: String, required: true },     duration: { type: String, required: true },     completionStatus: { type: String, enum: ["Ongoing", "Completed"],default: "Ongoing" },   }, const extracurricularSchema = new mongoose.Schema(   {     studentId: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true },     activityName: { type: String, required: true },     type : {type : String},     position: { type: String },     achievements: { type: String },     details : {type : String}   },  const skillsSchema = new mongoose.Schema(   {     studentId: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true },     skillName: { type: String, required: true },     proficiency: { type: String, enum: ["Beginner", "Intermediate", "Advanced"], required: true },   },   { timestamps: true } );  const Skills = mongoose.model("Skills", skillsSchema); export default Skills;
+// const studentdata = mongoose.model("studentdata", studentSchema);
+// export default studentdata;
+//   const academicSchema = new mongoose.Schema(   {     studentId: { type: mongoose.Schema.Types.ObjectId, ref: "studentdata", required: true },     subject: { type: String, required: true },     code : {type :String , required : true},     marks: { type: Number, required: true },     totalMarks: { type: Number, required: true },     grade: { type: String, required: true },     year: { type: Number, required: true },   }, const attendanceSchema = new mongoose.Schema(   {     studentId: {       type: mongoose.Schema.Types.ObjectId,       ref: "studentdata",       required: true,     },     date: {       type: Date,       required: true,     },     status: {       type: String,       enum: ["Present", "Absent", "Late", "Excused"],       required: true,     },   }, const courseSchema = new mongoose.Schema(   {     studentId: { type: mongoose.Schema.Types.ObjectId, ref: "studentdata", required: true },     courseName: { type: String, required: true },     institution: { type: String, required: true },     amount: { type: Number, required: true },     department: { type: String, required: true },     duration: { type: String, required: true },     completionStatus: { type: String, enum: ["Ongoing", "Completed"],default: "Ongoing" },   }, const extracurricularSchema = new mongoose.Schema(   {     studentId: { type: mongoose.Schema.Types.ObjectId, ref: "studentdata", required: true },     activityName: { type: String, required: true },     type : {type : String},     position: { type: String },     achievements: { type: String },     details : {type : String}   },  const skillsSchema = new mongoose.Schema(   {     studentId: { type: mongoose.Schema.Types.ObjectId, ref: "studentdata", required: true },     skillName: { type: String, required: true },     proficiency: { type: String, enum: ["Beginner", "Intermediate", "Advanced"], required: true },   },   { timestamps: true } );  const Skills = mongoose.model("Skills", skillsSchema); export default Skills;

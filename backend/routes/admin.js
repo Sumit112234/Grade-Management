@@ -1,15 +1,13 @@
-// import { Router } from 'express';
-// // import { forgotPassword, loginUser, logoutUser,getAddress,addAddress,getAuthToken, refreshToken, resetPassword, saveUser, updateUserDetails, uploadAvator, verifyForgotPassword, verifyUser, verifyToken, getProfile } from '../UtilitiFunctions/userHandler.js';
-
-// import auth from '../middleware/auth.js';
-// import { getOrders ,updateStatus } from '../UtilitiFunctions/adminHandler.js';
+import { Router } from 'express';
+import auth from '../middleware/auth.js';
+import { addAttendance ,addCourse} from '../UtilitiFunctions/adminHandler.js';
 
 
-// const adminRouter = Router();
+
+const adminRouter = Router();
+
+adminRouter.post('/add-attendance',auth, addAttendance);
+adminRouter.post('/add-course', addCourse);
 
 
-// adminRouter.get('/getorders',auth, getOrders);
-// adminRouter.post('/update-status',auth, updateStatus);
-
-
-// export default adminRouter;
+export default adminRouter;

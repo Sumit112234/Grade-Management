@@ -40,17 +40,33 @@ export const StudentProvider = ({ children }) => {
       return false
     }
   }
+  const logout = async()=>{
+    try {
+     
+      let res = await fetch(`${backend_url}/students/logout`, {
+        credentials: "include",
+      });
+      res = await res.json();
+      console.log(res);
+      setStudent(null)
+      return true;
+    } catch (e) {
+      console.log(e);
+      return false
+    }
+
+  }
 
   useEffect(() => {
     const getStudent = async () => {
       const data = await fetchStudent();
-      setStudent(data);
+      setStudent(data.user);
     };
     getStudent();
   }, []);
 
   return (
-    <StudentContext.Provider value={{ student ,setStudent,signup,login}}>
+    <StudentContext.Provider value={{ student ,setStudent,signup,login,logout}}>
       {children}
     </StudentContext.Provider>
   );

@@ -12,6 +12,7 @@ import extracurricularRoutes from "./routes/extraRoute.js";
 import academicRoutes from "./routes/academicRoute.js";
 import courseRoutes from "./routes/courseRoute.js";
 import attendanceRoute from "./routes/attendenceRoute.js";
+import adminRouter from './routes/admin.js';
 
 
 
@@ -49,7 +50,7 @@ app.use("/api/extracurricular", extracurricularRoutes);
 app.use("/api/academic", academicRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/attendance", attendanceRoute)
-
+app.use("/api", adminRouter);
 
 connectDb().then(()=>{
     app.listen(PORT, ()=>{

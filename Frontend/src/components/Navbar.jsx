@@ -1,15 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { LogOut } from 'lucide-react';
+import { useStudent } from '../context/userContext';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
-
-  // Check if the current route is active
+  const { student , logout } = useStudent();
+  const navigate = useNavigate();  // Check if the current route is active
   const isActive = (path) => {
     return location.pathname === path;
+  };
+
+  const handleLogout = () => {
+    logout();
+    // navigate('/login');
   };
 
   // Handle scroll event to change navbar appearance on scroll
@@ -39,7 +46,7 @@ const Navbar = () => {
 
   return (
     <nav 
-      className={`fixed w-full z-50 transition-all duration-300 ${
+      className={`fixed w-full z-40  transition-all duration-300 ${
         scrolled ? 'bg-white shadow-md py-2' : 'bg-transparent py-4'
       }`}
     >
@@ -113,6 +120,15 @@ const Navbar = () => {
                 <span className="text-sm font-medium text-gray-700">John Smith</span>
               </Link>
             </div>
+            <div className="cursor-pointer rounded-2xl">
+        <button 
+          onClick={handleLogout}
+          className="flex items-center  px-4 py-2 bg-red-400  hover:text-black cursor-pointer text-white rounded-md hover:bg-red-600 transition-colors"
+        >
+          <LogOut className="w-4 h-4 mr-2" />
+          Logout
+        </button>
+      </div>
           </div>
 
           {/* Mobile menu button */}
@@ -186,8 +202,11 @@ const Navbar = () => {
               Notifications (3)
             </Link>
           </div>
+         
         </div>
+        
       </motion.div>
+      
     </nav>
   );
 };

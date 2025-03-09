@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
+import { addAttendance, addCourses } from '../adminUtils/addAttendance';
 
 const CounselorAttendancePage = () => {
   // States for filters and data
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [selectedCourse, setSelectedCourse] = useState('');
+  const [selectedCourseId, setSelectedCourseId] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -121,7 +123,9 @@ const CounselorAttendancePage = () => {
   };
   
   // Submit attendance for all students
-  const submitAttendance = () => {
+  const submitAttendance = async() => {
+
+   
     // Validate that all students have an attendance status
     const unrecordedStudents = filteredStudents.filter(student => student.attendance === null);
     
@@ -132,8 +136,23 @@ const CounselorAttendancePage = () => {
     }
     
     // In production, this would be an API call to save attendance data
-    console.log("Submitting attendance for:", selectedDate, selectedCourse, filteredStudents);
-    
+    const attendanceDataPre = filteredStudents.map((student)=>{
+      return {
+        studentId : '67cbdf6a9081457c265d284f',// student.studentId,
+        timeIn : student.timeIn,
+        timeOut : student.timeOut,
+        status : student.attendance
+      }
+    })
+    console.log( courses[selectedCourse])
+    let cid = courses[selectedCourse]?.code;
+    const attendanceData = {
+      students : attendanceDataPre,
+      course : '67cd9bb59f6b394057f7ba39', //cid,
+      date : selectedDate,
+    }
+    console.log("Submitting attendance for:", selectedDate, selectedCourse, filteredStudents,attendanceData);
+    await addAttendance(attendanceData);
     setSuccessMessage('Attendance successfully recorded!');
     setTimeout(() => setSuccessMessage(''), 5000);
   };
@@ -244,12 +263,15 @@ const CounselorAttendancePage = () => {
                 id="course"
                 name="course"
                 value={selectedCourse}
-                onChange={(e) => setSelectedCourse(e.target.value)}
+                onChange={(e) =>{
+                   setSelectedCourse(e.target.value)
+                   
+                }}
                 className="mt-1 py-2 px-3 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               >
                 <option value="">All Courses</option>
                 {courses.map((course) => (
-                  <option key={course.id} value={course.id}>{course.name}</option>
+                  <option  key={course.id} value={course.id}>{course.name}</option>
                 ))}
               </select>
             </div>

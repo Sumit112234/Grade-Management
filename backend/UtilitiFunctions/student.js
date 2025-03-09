@@ -1,6 +1,7 @@
 import Student from "../models/Student.js";
 import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import uploadImageCloudinary from "../utils/uploadImageCloudinary.js";
 
 
 const getEnroll = ()=>{
@@ -14,6 +15,7 @@ const getEnroll = ()=>{
     }
     return digits.join('');
 }
+
 
 const generateTokens = (userId) => {
   const accessToken = jwt.sign({ userId }, process.env.SECRET_KEY_ACCESS_TOKEN, {
@@ -53,6 +55,10 @@ const setCookies = (res, accessToken, refreshToken) => {
   // 	sameSite: "strict", // prevents CSRF attack, cross-site request forgery attack
   // 	maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   // });
+};
+const removeCookies = (res) => {
+  res.cookie("accessToken",null);
+  res.cookie("refreshToken",null);
 };
 
 export async function saveUser(req,res){
@@ -135,7 +141,45 @@ export async function saveUser(req,res){
   }
   
 }
+export async function logoutUser(req,res){
+      try {
+  
+          const user = req.user;
+  
+  
+          const cookiesOption =  {
+              httpOnly : true,
+              secure : true,
+              sameSite : "None",
+              maxAge: 15 * 60 * 1000, // 15 minutes
+          }
 
+          removeCookies(res);
+          // res.clearCookie('accessToken',cookiesOption);
+          // res.clearCookie('refreshToken',cookiesOption);
+  
+          //  await Student.findByIdAndUpdate( user._id,{
+          //     refresh_token : "",
+          // })
+       
+          return res.status(200).json({
+                  message: "Successfully logout.",
+                  success : true,
+                  error : false,
+                  cookies : req.cookies
+              })
+          
+        
+          
+      } catch (error) {
+          //console.error("Logout error:", error);
+          return res.status(400).json({
+              message: "Some internal server error.",
+              success : false,
+              error : true
+          })
+      }
+  }
 
 export async function loginUser(req,res){
   try {
@@ -196,6 +240,59 @@ export async function loginUser(req,res){
       })
   }
 }
+
+
+
+export async function updateStudentDetails(req, res) {
+    try {
+        const user = req.user;
+        const { name, email, password, mobile } = req.body;
+        const image = req.file; // Check if file is uploaded
+        console.log(req.body);
+        let updatedData = {};
+
+        // Update user details if provided
+        if (name) updatedData.name = name;
+        if (email) updatedData.email = email;
+        if (mobile) updatedData.mobile = mobile;
+        if (password) {
+            let salt = await bcryptjs.genSalt(13);
+            updatedData.password = await bcryptjs.hash(password, salt);
+        }
+
+        // Upload avatar if a file is provided
+        // console.log(image);
+        if (image) {
+            const upload = await uploadImageCloudinary(image);
+            updatedData.profilePic = upload.url;
+        }
+
+        // Update the user in the database
+        const updatedUser = await Student.findByIdAndUpdate(user._id, updatedData, { new: true });
+
+        if (!updatedUser) {
+            return res.status(404).json({
+                message: "User not found.",
+                status: false,
+                error: true,
+            });
+        }
+
+        return res.status(200).json({
+            message: "User updated successfully.",
+            status: true,
+            error: false,
+            data: updatedUser,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message || "Internal server error.",
+            status: false,
+            error: true,
+        });
+    }
+}
+
 export const getStudent = async (req, res) => {
 	try {
 		res.status(200).json({user : req.user});

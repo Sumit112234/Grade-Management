@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useStudent } from '../context/userContext';
 
 const Login = () => {
@@ -9,8 +9,16 @@ const Login = () => {
     password: '',
   });
 
-  const { student, login } = useStudent();
+  const { student, login, setStudent } = useStudent();
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+
+  useEffect(()=>{
+    console.log(student)
+    if(student)
+        navigate('/');
+  },[student])
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -21,7 +29,13 @@ const Login = () => {
     setLoading(true);
     
     login(formData)
-    .then(()=>setLoading(false))
+    .then(()=>{
+      setTimeout(()=>{
+        setLoading(false);
+        setStudent({});
+        navigate('/');
+      },[3000])
+    })
     .catch(()=>setLoading(false));
 
     setTimeout(() => {
@@ -32,7 +46,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br sm:pt-20 from-indigo-50 to-blue-100 flex items-center justify-center px-4">
+    <div className="min-h-screen absolute z-50 w-screen h-screen bg-gradient-to-br sm:pt-20 from-indigo-50 to-blue-100 flex items-center justify-center px-4">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
