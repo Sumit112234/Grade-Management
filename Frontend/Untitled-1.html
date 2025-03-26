@@ -1,0 +1,84 @@
+
+      {/* New Section: Personalized Feedback */}
+      {student && feedback && (
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <h2 className="text-xl font-semibold mb-4">Personalized Feedback & Suggestions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Weak Subjects */}
+            <div className="bg-blue-50 p-4 rounded-md">
+              <h3 className="font-medium text-blue-800 mb-2">Identify Weak Subjects</h3>
+              <ul className="list-disc pl-5 text-blue-700 space-y-1">
+                {getWeakSubjects().length > 0 ? (
+                  getWeakSubjects().map((subject, index) => (
+                    <li key={index}>Focus on improving {subject}</li>
+                  ))
+                ) : (
+                  <li>Focus on building a stronger foundation in problem-solving subjects</li>
+                )}
+              </ul>
+            </div>
+            
+            {/* Study Techniques */}
+            <div className="bg-green-50 p-4 rounded-md">
+              <h3 className="font-medium text-green-800 mb-2">Study Techniques</h3>
+              <ul className="list-disc pl-5 text-green-700 space-y-1">
+                <li>Create concept maps to visualize relationships between ideas</li>
+                <li>Break down complex topics into smaller, manageable chunks</li>
+                <li>Practice past papers and mock tests to build confidence</li>
+              </ul>
+            </div>
+            
+            {/* Time Management Tips */}
+            <div className="bg-purple-50 p-4 rounded-md">
+              <h3 className="font-medium text-purple-800 mb-2">Time Management Tips</h3>
+              <ul className="list-disc pl-5 text-purple-700 space-y-1">
+                <li>Allocate dedicated time slots for each subject</li>
+                <li>Prioritize tasks based on deadlines and importance</li>
+                <li>Use productivity tools to stay organized</li>
+              </ul>
+            </div>
+            
+            {/* Motivational Advice */}
+            <div className="bg-yellow-50 p-4 rounded-md">
+              <h3 className="font-medium text-yellow-800 mb-2">Motivational Advice</h3>
+              <ul className="list-disc pl-5 text-yellow-700 space-y-1">
+                <li>Celebrate small victories to stay motivated</li>
+                <li>Remind yourself of your strengths and accomplishments</li>
+                <li>Focus on progress, not perfection</li>
+              </ul>
+            </div>
+            
+            {/* Skills & Extracurricular Improvement */}
+            <div className="bg-red-50 p-4 rounded-md">
+              <h3 className="font-medium text-red-800 mb-2">Skill & Extracurricular Improvement</h3>
+              <ul className="list-disc pl-5 text-red-700 space-y-1">
+                {skillsData.some(skill => skill.skillName.toLowerCase().includes('speak')) ? (
+                  <li>Leverage your public speaking skills to present ideas confidently</li>
+                ) : (
+                  <li>Consider joining public speaking clubs to build presentation skills</li>
+                )}
+                {skillsData.some(skill => skill.skillName.toLowerCase().includes('program')) ? (
+                  <li>Explore online resources to improve your programming skills</li>
+                ) : (
+                  <li>Consider learning basic programming - it's a valuable skill</li>
+                )}
+                {extracurricularData.some(activity => activity.activityName.toLowerCase().includes('debate')) ? (
+                  <li>Continue with debates to develop critical thinking</li>
+                ) : (
+                  <li>Consider joining debate clubs to develop critical thinking</li>
+                )}
+              </ul>
+            </div>
+            
+            {/* Consistency & Practice */}
+            <div className="bg-indigo-50 p-4 rounded-md">
+              <h3 className="font-medium text-indigo-800 mb-2">Consistency & Practice</h3>
+              <ul className="list-disc pl-5 text-indigo-700 space-y-1">
+                <li>Set aside time each day for consistent practice and review</li>
+                <li>Use flashcards to reinforce key concepts and formulas</li>
+                <li>Make a habit of reading and staying updated on current events</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}

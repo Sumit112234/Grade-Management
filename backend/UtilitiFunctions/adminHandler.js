@@ -25,14 +25,13 @@ export async function addAttendance(req, res) {
 export async function addCourse(req, res) {
 
     try {
-        let data = {
-            
+        let data = 
+        {
                 courseName: "MCA",
                 institution: "MITS",
                 amount: "2,15,000",
                 department: "CSE",
                 duration: "2 years"
-              
         }
         const response = await Course.create(data);
 

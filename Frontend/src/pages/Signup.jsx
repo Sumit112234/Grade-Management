@@ -66,9 +66,13 @@ const Signup = () => {
     formData.type = formData.role;
     formData.name = formData.fullName;
     
-    signup(formData);
-    setTimeout(() => {
+    signup(formData)
+    .then(()=>{
       setLoading(false);
+      navigate('/');
+    })
+    setTimeout(() => {
+      // setLoading(false);
       console.log('Signup attempt with:', formData);
     }, 1500);
   };

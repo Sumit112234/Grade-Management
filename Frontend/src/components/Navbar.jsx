@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { LogOut } from 'lucide-react';
 import { useStudent } from '../context/userContext';
+import { analyseReport } from '../utils/analyseReport';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,7 +16,43 @@ const Navbar = () => {
   };
 
   const handleLogout = () => {
-    logout();
+    let stu = {
+      "student": {
+        "name": "John Doe",
+        "email": "johndoe@example.com",
+        "phone": "9876543210",
+        "age": 17,
+        "grade": "11th",
+        "profilePic": "https://example.com/profile.jpg",
+        "enrollment": "JD12345",
+        "type": "Full-time",
+        "academicRecords": [
+          { "subject": "Mathematics", "code": "MTH101", "marks": 65, "totalMarks": 100, "grade": "C" },
+          { "subject": "Science", "code": "SCI102", "marks": 85, "totalMarks": 100, "grade": "A" },
+          { "subject": "English", "code": "ENG103", "marks": 78, "totalMarks": 100, "grade": "B" }
+        ],
+        "skills": [
+          { "skillName": "Public Speaking", "proficiency": "Intermediate" },
+          { "skillName": "Programming", "proficiency": "Beginner" }
+        ],
+        "extracurricularActivities": [
+          { "activityName": "Debate Club" },
+          { "activityName": "Football Team" }
+        ],
+        "courses": [
+          { "courseName": "Web Development", "institution": "Online Academy" },
+          { "courseName": "Physics Crash Course", "institution": "City Institute" }
+        ],
+        "attendance": [
+          { "date": "2025-03-01", "students": [{ "status": "Present" }] },
+          { "date": "2025-03-02", "students": [{ "status": "Absent" }] },
+          { "date": "2025-03-03", "students": [{ "status": "Late" }] }
+        ]
+      }
+    }
+    
+    analyseReport(stu);
+    // logout();
     // navigate('/login');
   };
 
