@@ -16,7 +16,7 @@ const Login = () => {
 
   useEffect(()=>{
     console.log(student)
-    if(student)
+    if(student && student.email)
         navigate('/');
   },[student])
 
@@ -30,11 +30,9 @@ const Login = () => {
     
     login(formData)
     .then(()=>{
-      setTimeout(()=>{
-        setLoading(false);
-        setStudent({});
-        navigate('/');
-      },[3000])
+      navigate('/');
+      setLoading(false);
+      
     })
     .catch(()=>setLoading(false));
 

@@ -1,734 +1,253 @@
-// // import User from '../models/user.js';
-// import bcryptjs from 'bcryptjs';
-// import sendEmail from './resendEmails.js';
-// import verifyEmailTemplate from '../utils/verifyEmailTemplate.js';
-// import generateAccessToken from '../utils/generateAccessToken.js';
-// import generateRefreshToken from '../utils/generateRefreshToken.js';
-// import uploadImageCloudinary from '../utils/uploadImageCloudinary.js';
-// import jwt from 'jsonwebtoken';
-// import generateOpt from '../utils/generateOpt.js';
-// import forgotPasswordTemplate from '../utils/forgotPasswordTemplate.js';
-// import User from '../models/user.js';
-// import mongoose from 'mongoose';
-// import Address from '../models/address.js';
-// import user from '../models/user.js';
+import Academic from "../models/Academic.js";
+import Courses from "../models/Course.js"
 
+const coursesData = [
+    {
+        "courseCode": "BT101",
+        "courseName": "B.Tech",
+        "institution": "MIT University",
+        "amount": "120000",
+        "department": "Engineering",
+        "duration": "4 Years",
+        "totalSemisters": 8,
+        "headOfDepartment": "Dr. Rajesh Kumar",
+        "subjects": []
+      },
+      {
+        "courseCode": "MCA202",
+        "courseName": "MCA",
+        "institution": "MIT University",
+        "amount": "90000",
+        "department": "Computer Applications",
+        "duration": "3 Years",
+        "totalSemisters": 6,
+        "headOfDepartment": "Dr. Pooja Sharma",
+        "subjects": []
+      },
+      {
+        "courseCode": "MBA303",
+        "courseName": "MBA",
+        "institution": "MIT University",
+        "amount": "150000",
+        "department": "Management",
+        "duration": "2 Years",
+        "totalSemisters": 4,
+        "headOfDepartment": "Dr. Anil Mehta",
+        "subjects": []
+      },
+      {
+        "courseCode": "BBA404",
+        "courseName": "BBA",
+        "institution": "MIT University",
+        "amount": "100000",
+        "department": "Business Administration",
+        "duration": "3 Years",
+        "totalSemisters": 6,
+        "headOfDepartment": "Dr. Sandeep Yadav",
+        "subjects": []
+      }
+  ];
 
-
-// const generateTokens = (userId) => {
-// 	const accessToken = jwt.sign({ userId }, process.env.SECRET_KEY_ACCESS_TOKEN, {
-// 		expiresIn: "100m",
-// 	});
-
-// 	const refreshToken = jwt.sign({ userId }, process.env.SECRET_KEY_REFRESH_TOKEN, {
-// 		expiresIn: "7d",
-// 	});
-
-// 	return { accessToken, refreshToken };
-// };
-// const setCookies = (res, accessToken, refreshToken) => {
+const subjects =   [
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Computer Fundamentals", "code": "MCA101", "subjectType": "Theory", "semester": "1st", "year": 1 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Mathematical Foundations", "code": "MCA102", "subjectType": "Theory", "semester": "1st", "year": 1 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "C Programming", "code": "MCA103", "subjectType": "Practical", "semester": "1st", "year": 1 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Database Management Systems", "code": "MCA104", "subjectType": "Theory", "semester": "1st", "year": 1 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Operating Systems", "code": "MCA105", "subjectType": "Theory", "semester": "1st", "year": 1 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Object-Oriented Programming", "code": "MCA201", "subjectType": "Practical", "semester": "2nd", "year": 1 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Software Engineering", "code": "MCA202", "subjectType": "Theory", "semester": "2nd", "year": 1 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Computer Networks", "code": "MCA203", "subjectType": "Theory", "semester": "2nd", "year": 1 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Web Technologies", "code": "MCA204", "subjectType": "Practical", "semester": "2nd", "year": 1 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Cloud Computing", "code": "MCA205", "subjectType": "Theory", "semester": "2nd", "year": 1 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Java Programming", "code": "MCA301", "subjectType": "Practical", "semester": "3rd", "year": 2 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Data Mining", "code": "MCA302", "subjectType": "Theory", "semester": "3rd", "year": 2 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Advanced DBMS", "code": "MCA303", "subjectType": "Theory", "semester": "3rd", "year": 2 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Artificial Intelligence", "code": "MCA304", "subjectType": "Theory", "semester": "3rd", "year": 2 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Machine Learning", "code": "MCA305", "subjectType": "Theory", "semester": "3rd", "year": 2 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Big Data Analytics", "code": "MCA401", "subjectType": "Theory", "semester": "4th", "year": 2 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Cyber Security", "code": "MCA402", "subjectType": "Theory", "semester": "4th", "year": 2 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Cloud Computing", "code": "MCA403", "subjectType": "Theory", "semester": "4th", "year": 2 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Python Programming", "code": "MCA404", "subjectType": "Practical", "semester": "4th", "year": 2 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Advanced JavaScript", "code": "MCA405", "subjectType": "Practical", "semester": "4th", "year": 2 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "IoT and Embedded Systems", "code": "MCA501", "subjectType": "Theory", "semester": "5th", "year": 3 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Blockchain Technology", "code": "MCA502", "subjectType": "Theory", "semester": "5th", "year": 3 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Software Testing", "code": "MCA503", "subjectType": "Theory", "semester": "5th", "year": 3 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Full Stack Development", "code": "MCA504", "subjectType": "Practical", "semester": "5th", "year": 3 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Mobile App Development", "code": "MCA505", "subjectType": "Practical", "semester": "5th", "year": 3 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Industrial Training", "code": "MCA601", "subjectType": "Practical", "semester": "6th", "year": 3 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Major Project", "code": "MCA602", "subjectType": "Practical", "semester": "6th", "year": 3 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Entrepreneurship Development", "code": "MCA603", "subjectType": "Theory", "semester": "6th", "year": 3 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "Ethical Hacking", "code": "MCA604", "subjectType": "Theory", "semester": "6th", "year": 3 },
+    { "courseId" : "67e78c853fb39fa1ee791d1a", "subject": "IT Law and Governance", "code": "MCA605", "subjectType": "Theory", "semester": "6th", "year": 3 },
+    { "courseId" : "67e78c853fb39fa1ee791d1b", "subject": "Principles of Management", "code": "MBA101", "subjectType": "Theory", "semester": "1st", "year": 1 },
+    { "courseId" : "67e78c853fb39fa1ee791d1b", "subject": "Financial Accounting", "code": "MBA102", "subjectType": "Theory", "semester": "1st", "year": 1 },
+    { "courseId" : "67e78c853fb39fa1ee791d1b", "subject": "Business Communication", "code": "MBA103", "subjectType": "Theory", "semester": "1st", "year": 1 },
+    { "courseId" : "67e78c853fb39fa1ee791d1b", "subject": "Quantitative Methods", "code": "MBA104", "subjectType": "Theory", "semester": "1st", "year": 1 },
+    { "courseId" : "67e78c853fb39fa1ee791d1b", "subject": "Business Law", "code": "MBA105", "subjectType": "Theory", "semester": "1st", "year": 1 },
+    { "courseId" : "67e78c853fb39fa1ee791d1b", "subject": "Marketing Management", "code": "MBA201", "subjectType": "Theory", "semester": "2nd", "year": 1 },
+    { "courseId" : "67e78c853fb39fa1ee791d1b", "subject": "Human Resource Management", "code": "MBA202", "subjectType": "Theory", "semester": "2nd", "year": 1 },
+    { "courseId" : "67e78c853fb39fa1ee791d1b", "subject": "Operations Management", "code": "MBA203", "subjectType": "Theory", "semester": "2nd", "year": 1 },
+    { "courseId" : "67e78c853fb39fa1ee791d1b", "subject": "Strategic Management", "code": "MBA204", "subjectType": "Theory", "semester": "2nd", "year": 1 },
+    { "courseId" : "67e78c853fb39fa1ee791d1b", "subject": "Corporate Finance", "code": "MBA205", "subjectType": "Theory", "semester": "2nd", "year": 1 },
+    { "courseId" : "67e78c853fb39fa1ee791d1b", "subject": "Consumer Behavior", "code": "MBA301", "subjectType": "Theory", "semester": "3rd", "year": 2 },
+    { "courseId" : "67e78c853fb39fa1ee791d1b", "subject": "Financial Management", "code": "MBA302", "subjectType": "Theory", "semester": "3rd", "year": 2 },
+    { "courseId" : "67e78c853fb39fa1ee791d1b", "subject": "International Business", "code": "MBA303", "subjectType": "Theory", "semester": "3rd", "year": 2 },
+    { "courseId" : "67e78c853fb39fa1ee791d1b", "subject": "Supply Chain Management", "code": "MBA304", "subjectType": "Theory", "semester": "3rd", "year": 2 },
+    { "courseId" : "67e78c853fb39fa1ee791d1b", "subject": "Business Analytics", "code": "MBA305", "subjectType": "Theory", "semester": "3rd", "year": 2 },
+    { "courseId" : "67e78c853fb39fa1ee791d1b", "subject": "Entrepreneurship and Innovation", "code": "MBA401", "subjectType": "Theory", "semester": "4th", "year": 2 },
+    { "courseId" : "67e78c853fb39fa1ee791d1b", "subject": "Leadership and Change Management", "code": "MBA402", "subjectType": "Theory", "semester": "4th", "year": 2 },
+    { "courseId" : "67e78c853fb39fa1ee791d1b", "subject": "E-Commerce", "code": "MBA403", "subjectType": "Theory", "semester": "4th", "year": 2 },
+    { "courseId" : "67e78c853fb39fa1ee791d1b", "subject": "Corporate Governance", "code": "MBA404", "subjectType": "Theory", "semester": "4th", "year": 2 },
+    { "courseId" : "67e78c853fb39fa1ee791d1b", "subject": "Internship & Project", "code": "MBA405", "subjectType": "Practical", "semester": "4th", "year": 2 },
+    { courseId: "67e78c853fb39fa1ee791d19", subject: "Engineering Mathematics", code: "BT101", subjectType: "Theory", semester: "1st", year: 1 },
+    { courseId: "67e78c853fb39fa1ee791d19", subject: "Physics", code: "BT102", subjectType: "Theory", semester: "1st", year: 1 },
+    { courseId: "67e78c853fb39fa1ee791d19", subject: "Chemistry", code: "BT103", subjectType: "Theory", semester: "1st", year: 1 },
+    { courseId: "67e78c853fb39fa1ee791d19", subject: "C Programming", code: "BT104", subjectType: "Practical", semester: "1st", year: 1 },
+    { courseId: "67e78c853fb39fa1ee791d19", subject: "Basic Electrical Engineering", code: "BT105", subjectType: "Theory", semester: "1st", year: 1 },
+    { courseId: "67e78c853fb39fa1ee791d19", subject: "Data Structures", code: "BT201", subjectType: "Theory", semester: "2nd", year: 1 },
+    { courseId: "67e78c853fb39fa1ee791d19", subject: "Digital Logic Design", code: "BT202", subjectType: "Theory", semester: "2nd", year: 1 },
+    { courseId: "67e78c853fb39fa1ee791d19", subject: "Object-Oriented Programming", code: "BT203", subjectType: "Theory", semester: "2nd", year: 1 },
+    { courseId: "67e78c853fb39fa1ee791d19", subject: "Engineering Drawing", code: "BT204", subjectType: "Practical", semester: "2nd", year: 1 },
+    { courseId: "67e78c853fb39fa1ee791d19", subject: "Communication Skills", code: "BT205", subjectType: "Theory", semester: "2nd", year: 1 },
+    { courseId: "67e78c853fb39fa1ee791d19", subject: "Database Management Systems", code: "BT301", subjectType: "Theory", semester: "3rd", year: 2 },
+    { courseId: "67e78c853fb39fa1ee791d19", subject: "Computer Networks", code: "BT302", subjectType: "Theory", semester: "3rd", year: 2 },
+    { courseId: "67e78c853fb39fa1ee791d19", subject: "Software Engineering", code: "BT303", subjectType: "Theory", semester: "3rd", year: 2 },
+    { courseId: "67e78c853fb39fa1ee791d19", subject: "Operating Systems", code: "BT304", subjectType: "Theory", semester: "3rd", year: 2 },
+    { courseId: "67e78c853fb39fa1ee791d19", subject: "Web Development", code: "BT305", subjectType: "Practical", semester: "3rd", year: 2 },
+    { courseId: "67e78c853fb39fa1ee791d1c", subject: "Business Economics", code: "BBA101", subjectType: "Theory", semester: "1st", year: 1 },
+    { courseId: "67e78c853fb39fa1ee791d1c", subject: "Principles of Management", code: "BBA102", subjectType: "Theory", semester: "1st", year: 1 },
+    { courseId: "67e78c853fb39fa1ee791d1c", subject: "Financial Accounting", code: "BBA103", subjectType: "Theory", semester: "1st", year: 1 },
+    { courseId: "67e78c853fb39fa1ee791d1c", subject: "Business Statistics", code: "BBA104", subjectType: "Theory", semester: "1st", year: 1 },
+    { courseId: "67e78c853fb39fa1ee791d1c", subject: "Marketing Management", code: "BBA105", subjectType: "Theory", semester: "1st", year: 1 },
+    { courseId: "67e78c853fb39fa1ee791d1c", subject: "Organizational Behavior", code: "BBA201", subjectType: "Theory", semester: "2nd", year: 1 },
+    { courseId: "67e78c853fb39fa1ee791d1c", subject: "Business Communication", code: "BBA202", subjectType: "Theory", semester: "2nd", year: 1 },
+    { courseId: "67e78c853fb39fa1ee791d1c", subject: "Cost Accounting", code: "BBA203", subjectType: "Theory", semester: "2nd", year: 1 },
+    { courseId: "67e78c853fb39fa1ee791d1c", subject: "Business Law", code: "BBA204", subjectType: "Theory", semester: "2nd", year: 1 },
+    { courseId: "67e78c853fb39fa1ee791d1c", subject: "Corporate Finance", code: "BBA205", subjectType: "Theory", semester: "2nd", year: 1 }
+  ]
     
+  export const utilityFunction = async (req, res) => {
+    try {
+      // Insert subjects into the database
+      const insertedSubjects = await Academic.insertMany(subjects);
+      console.log("Subjects Inserted:", insertedSubjects);
   
-// 	res.cookie("accessToken", accessToken, {
-//         httpOnly : true,
-//         secure : true,
-//         sameSite : "None",
-// 		maxAge: 15 * 60 * 10000, // 15 minutes
-// 	});
-// 	res.cookie("refreshToken", refreshToken, {
-//         httpOnly : true,
-//         secure : true,
-//         sameSite : "None",
-// 		maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-// 	});
-// 	// res.cookie("accessToken", accessToken, {
-// 	// 	httpOnly: true, // prevent XSS attacks, cross site scripting attack
-// 	// 	secure: process.env.NODE_ENV === "production",
-// 	// 	sameSite: "strict", // prevents CSRF attack, cross-site request forgery attack
-// 	// 	maxAge: 15 * 60 * 1000, // 15 minutes
-// 	// });
-// 	// res.cookie("refreshToken", refreshToken, {
-// 	// 	httpOnly: true, // prevent XSS attacks, cross site scripting attack
-// 	// 	secure: process.env.NODE_ENV === "production",
-// 	// 	sameSite: "strict", // prevents CSRF attack, cross-site request forgery attack
-// 	// 	maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-// 	// });
-// };
-
-// export async function getAuthToken(req,res){
-//     const token = req?.cookies?.authToken || req?.headers?.authorization?.split(" ")[1];
-        
-    
-//     if (!token) {
-//         return res.status(400).json({
-//             message: "No token found!",
-//             success: false,
-//             error: true,
-//             data : req?.cookies
-//         });
-//     }
-//     return res.status(200).json({
-//         message: "token found!",
-//         success: true,
-//         error: false,
-//         token
-//     });
-// }
-
-
-// export async function saveUser(req,res){
-
-//     try{
-
-        
-//         const {name , email , password} = req.body;
-
-        
-//         if(!name || !email || !password)
-//         {
-//            return  res.status(500).json({
-//                 message: "name or email or password is not coming.",
-//                 status : false,
-//                 error : true,
-//                 data : {name ,email,password}
-//             })
-//         }
-
-//         const user = await User.findOne({email});
-
-//         if(user)
-//         {
-//             return res.status(500).json({
-//                 message: "User already exists",
-//                 status : false,
-//                 error : true
-//             })
-//         }
-
-//         let salt = await bcryptjs.genSalt(13);
-//         let hashPass = await bcryptjs.hash(password,salt);
-    
-
-//         let dataModel = {
-//             name,
-//             email : email.toLowerCase(),
-//             password : hashPass,
-//             last_login_date : new Date()
-
-//         }
-//         const newUser = await User.create(dataModel);
-//         console.log(newUser);
-//         const { accessToken, refreshToken } = generateTokens(newUser._id);
-
-//         setCookies(res, accessToken, refreshToken);
-      
-//         // let data = new User(dataModel);
-//         // await data.save();
-
-//         let verifyEmailUrl = ".../verify?token=uniqueToken";
-//         let verify_email = sendEmail({
-//             sendTo : email,
-//             subject : "Verify Email",
-//             html : verifyEmailTemplate({
-//                 name,
-//                 url : verifyEmailUrl
-//             })
-//         })
-
-//         return res.status(200).json({
-//             message: "User stored Successfully.",
-//             status : true,
-//             error : false,
-//             user : newUser,
-//             accessToken,
-//             refreshToken
-//         })
-//     }
-//     catch(e)
-//     {
-//       return res.status(500).json({
-//             message: "some internal server error occured.",
-//             status : false,
-//             error : true,
-//             e 
-//         })
-//     }
-    
-// }
-// export async function getUserDetail(req,res){
-
-//     try{
-
-//         let {_id} = req.params;
-//         console.log(_id);
-//         const fetchedUser = await user.find({ _id });
-
-//         res.status(200).json({
-//             user: fetchedUser,
-//             message: "User fetched successfully.",
-//             status: true,
-//             error: false,
-//         });
-//     }
-//     catch(e)
-//     {
-//       return res.status(500).json({
-//             message: "some internal server error occured.",
-//             status : false,
-//             error : true,
-//             e 
-//         })
-//     }
-    
-// }
-
-// export async function loginUser(req,res){
-//     try {
-
-//         const {email ,password} = req.body;
-        
-
-        
-//         const user = await User.findOne({email});
-        
-//         if(!user)
-//             {
-//                 return res.status(400).json({
-//                     message: "No Email found! Please register.",
-//                     success : false,
-//                     error : true
-//                 })
-//             }
-            
-//             if(user.status !== "Active")
-//             {
-//                 return res.status(400).json({
-//                     message: "Contact Admin.",
-//                     success : false,
-//                     error : true
-//                 })
-//             }
-
-//             user.last_login_date = new Date();
-            
-
-//             const cmp_password = await bcryptjs.compare(password,user.password);
-    
-//             if(!cmp_password)
-//             {
-//                 return res.status(400).json({
-//                     message: "Incorrect Credientials.",
-//                     success : false,
-//                     error : true
-//                 })
-//             }
-//             const { accessToken, refreshToken } = generateTokens(user._id);
-
-//             setCookies(res, accessToken, refreshToken);
-    
-    
-
-     
-//             await user.save();
-
-
-//         //console.log("request", req.cookies);
-
-//              res.status(200).json({
-//                 message: "Login success.",
-//                 success : true,
-//                 error : false,
-//                 user,
-//                 refreshToken,
-//                 accessToken
-//             })
-            
-
-
-
-
-      
-//     } catch (error) {
-//          res.status(400).json({
-//             message: "Some internal server error.",
-//             success : false,
-//             error : true
-//         })
-//     }
-// }
-
-// export async function addAddress(req,res){
-//     try {
-        
-//         let user = req.user;        
-//         let address = await Address.create(req.body);
-
-//         user.address_details.push(address._id);
-//         user.mobile = req.body.mobile;
-//         await user.save();
-        
-
-//         res.status(200).json({
-//             status : true,
-//             error : false,
-//             data : address,
-//             user
-//         })
-      
-//     } catch (error) {
-//          res.status(400).json({
-//             message: error.message || error,
-//             success : false,
-//             error : true
-//         })
-//     }
-// }
-// export async function updateAddress(req,res){
-//     try {
-        
-//         let user = req.user;    
-//         let {id} = req.params;    
-//         let data = req.body;
-//         // let address = await Address.create(req.body);
-//         console.log(data)
-//         const address = await Address.findByIdAndUpdate(id,data,{new:true});
-
-//         // user.address_details.push(address._id);
-//         user.mobile = req.body.mobile;
-//         await user.save();
-        
-
-//         res.status(200).json({
-//             status : true,
-//             error : false,
-//             data : address,
-//             user
-//         })
-      
-//     } catch (error) {
-//      res.status(400).json({
-//             message: error.message || error,
-//             success : false,
-//             error : true
-//         })
-//     }
-// }
-// export async function deleteAddress(req,res){
-//     try {
-        
-//         let user = req.user;        
-//         let { id }= req.params;
-//         console.log(id)
-
-//         const address = await Address.findByIdAndDelete(id);
-
-        
-//         let data = user.address_details;
-
-//         user.address_details = data.filter((add)=>add._id !== id);
-
-//         await user.save();
-
-//         res.status(200).json({
-//             status : true,
-//             error : false,
-//         })
-      
-//     } catch (error) {
-//         console.log(error);
-//         res.status(400).json({
-//             message: error.message || error,
-//             success : false,
-//             error : true
-//         })
-//     }
-// }
-// export async function getAddress(req,res){
-//     try {
-        
-
-//       let addresses = await Address.find({user : req.user._id})
-//         res.status(200).json({
-//             success : true,
-//             error : false,
-//             addresses
-//         })
-      
-//     } catch (error) {
-//         return res.status(400).json({
-//             message: error.message || error,
-//             success : false,
-//             error : true
-//         })
-//     }
-// }
-// export async function logoutUser(req,res){
-//     try {
-
-//         const user = req.user;
-
-
-//         const cookiesOption =  {
-//             httpOnly : true,
-//             secure : true,
-//             sameSite : "None",
-//             maxAge: 15 * 60 * 1000, // 15 minutes
-//         }
-//         res.clearCookie('accessToken',cookiesOption);
-//         res.clearCookie('refreshToken',cookiesOption);
-
-//          await User.findByIdAndUpdate( user._id,{
-//             refresh_token : "",
-//         })
-     
-//         return res.status(200).json({
-//                 message: "Successfully logout.",
-//                 success : true,
-//                 error : false,
-//                 cookies : req.cookies
-//             })
-        
-      
-        
-//     } catch (error) {
-//         //console.error("Logout error:", error);
-//         return res.status(400).json({
-//             message: "Some internal server error.",
-//             success : false,
-//             error : true
-//         })
-//     }
-// }
-
-// export async function updateUserDetails(req, res) {
-//     try {
-//         const user = req.user;
-//         const { name, email, password, mobile } = req.body;
-//         const image = req.file; // Check if file is uploaded
-
-//         let updatedData = {};
-
-//         // Update user details if provided
-//         if (name) updatedData.name = name;
-//         if (email) updatedData.email = email;
-//         if (mobile) updatedData.mobile = mobile;
-//         if (password) {
-//             let salt = await bcryptjs.genSalt(13);
-//             updatedData.password = await bcryptjs.hash(password, salt);
-//         }
-
-//         // Upload avatar if a file is provided
-//         // console.log(image);
-//         if (image) {
-//             const upload = await uploadImageCloudinary(image);
-//             updatedData.avatar = upload.url;
-//         }
-
-//         // Update the user in the database
-//         const updatedUser = await User.findByIdAndUpdate(user._id, updatedData, { new: true });
-
-//         if (!updatedUser) {
-//             return res.status(404).json({
-//                 message: "User not found.",
-//                 status: false,
-//                 error: true,
-//             });
-//         }
-
-//         return res.status(200).json({
-//             message: "User updated successfully.",
-//             status: true,
-//             error: false,
-//             data: updatedUser,
-//         });
-//     } catch (error) {
-//         return res.status(500).json({
-//             message: error.message || "Internal server error.",
-//             status: false,
-//             error: true,
-//         });
-//     }
-// }
-
-// export async function forgotPassword(req, res) {
-//     try {
-//         const { email } = req.body;
-
-//         if (!email) {
-//             return res.status(400).json({
-//                 message: "Email is required.",
-//                 status: false,
-//                 error: true,
-//             });
-//         }
-
-//         const user = await User.findOne({ email });
-//         if (!user) {
-//             return res.status(404).json({
-//                 message: "User not found.",
-//                 status: false,
-//                 error: true,
-//             });
-//         }
-
-//         const otp = generateOpt();
-
-//         const expireTime = Date.now() + 60 * 60 * 1000;
-
-//         const updateFeild = await User.findByIdAndUpdate(user._id, {
-//             forgot_password_expiry : new Date(expireTime).toISOString(),
-//             forgot_password_otp : otp
-//         })
-
-
-
-//         // const token = generateToken({ userId: user._id }); // Your token generation logic
-//         // const resetUrl = `.../reset-password?token=${token}`;
-//         await sendEmail({
-//             sendTo: email,
-//             subject: "Password Reset",
-//             html: forgotPasswordTemplate({name : user.name , otp}),
-//         });
-
-//         return res.status(200).json({
-//             message: "Password reset email sent successfully.",
-//             status: true,
-//             error: false,
-//             data : {
-//                 otp,
-//                 expireTime
-//             }
-//         });
-//     } catch (e) {
-//         return res.status(500).json({
-//             message: "Internal server error.",
-//             status: false,
-//             error: true,
-//             e,
-//         });
-//     }
-// }
-// export async function verifyForgotPassword(req, res) {
-//     try {
-//         const { email, otp } = req.body;
-
-//         if (!email || !otp) {
-//             return res.status(400).json({
-//                 message: "Email and OTP are required.",
-//                 status: false,
-//                 error: true,
-//             });
-//         }
-
-//         const user = await User.findOne({ email });
-
-//         if (!user) {
-//             return res.status(404).json({
-//                 message: "User not found.",
-//                 status: false,
-//                 error: true,
-//             });
-//         }
-
-//         // Compare expiry time
-//         if (new Date() <= new Date(user.forgot_password_expiry)) {
-//             if (otp === user.forgot_password_otp) {
-//                 return res.status(200).json({
-//                     message: "Authenticated Successfully.",
-//                     status: true,
-//                     error: false,
-//                 });
-//             } else {
-//                 return res.status(400).json({
-//                     message: "Incorrect OTP!",
-//                     status: false,
-//                     error: true,
-//                 });
-//             }
-//         } else {
-//             return res.status(408).json({
-//                 message: "Connection timed out. Please request a new OTP.",
-//                 status: false,
-//                 error: true,
-//             });
-//         }
-//     } catch (e) {
-//         return res.status(500).json({
-//             message: "Internal server error.",
-//             status: false,
-//             error: true,
-//             details: e.message,
-//         });
-//     }
-// }
-
-// export async function resetPassword(req, res) {
-//     try {
-//         const { email, newPassword } = req.body;
-
-//         if (!email || !newPassword) {
-//             return res.status(400).json({
-//                 message: "email and new password are required.",
-//                 status: false,
-//                 error: true,
-//             });
-//         }
-
-//         // const decoded = verifyToken(token); // Your token verification logic
-//         // if (!decoded) {
-//         //     return res.status(401).json({
-//         //         message: "Invalid or expired token.",
-//         //         status: false,
-//         //         error: true,
-//         //     });
-//         // }
-
-//         const salt = await bcryptjs.genSalt(13);
-//         const hashPass = await bcryptjs.hash(newPassword, salt);
-
-//         const user = await User.findOne({email});
-
-//         if(!user)
-//             return res.status(200).json({
-//                 message: "No user found!",
-//                 status: false,
-//                 error: true,
-//             });
-
-//         await User.findByIdAndUpdate(user._id, { password: hashPass });
-
-//         return res.status(200).json({
-//             message: "Password reset successfully.",
-//             status: true,
-//             error: false,
-//         });
-//     } catch (e) {
-//         return res.status(500).json({
-//             message: "Internal server error.",
-//             status: false,
-//             error: true,
-//             e,
-//         });
-//     }
-// }
-// export async function verifyUser(req, res) {
-//     try {
-//         const { token } = req.query;
-
-//         if (!token) {
-//             return res.status(400).json({
-//                 message: "Verification token is required.",
-//                 status: false,
-//                 error: true,
-//             });
-//         }
-
-//         // const decoded = verifyToken(token); // Your token verification logic
-//         // if (!decoded) {
-//         //     return res.status(401).json({
-//         //         message: "Invalid or expired token.",
-//         //         status: false,
-//         //         error: true,
-//         //     });
-//         // }
-
-//         await User.findByIdAndUpdate(userId, { isVerified: true });
-
-//         return res.status(200).json({
-//             message: "User verified successfully.",
-//             status: true,
-//             error: false,
-//         });
-//     } catch (e) {
-//         return res.status(500).json({
-//             message: "Internal server error.",
-//             status: false,
-//             error: true,
-//             e,
-//         });
-//     }
-// }
-// export async function refreshToken(req, res) {
-//     try {
-//         // const { token } = req.body;
-//         const refreshToken = req.cookies.refreshToken || req?.header?.authorisation?.split(" ")[1];
-
-
-
-//         if (!refreshToken) {
-//             return res.status(400).json({
-//                 message: "Refresh token is available.",
-//                 status: false,
-//                 error: true,
-//             });
-//         }
-
-//         const verifyToken = await jwt.verify(refreshToken ,process.env.SECRET_KEY_REFRESH_TOKEN)
-
-//         if(!verifyToken)
-//         {
-//             return res.status(400).json({
-//                 message: "Refresh token has expired.",
-//                 status: false,
-//                 error: true,
-//             });
-//         }
-
-//         // const decoded = verifyToken(token); // Your token verification logic
-//         // if (!decoded) {
-//         //     return res.status(401).json({
-//         //         message: "Invalid or expired token.",
-//         //         status: false,
-//         //         error: true,
-//         //     });
-//         // }
-
-//         const newAccessToken = generateAccessToken({ userId: verifyToken.id }); 
-
-        
-//         const cookiesOption = {
-//             httpOnly: true,
-//             secure: process.env.NODE_ENV === 'production', 
-//             sameSite: 'None',
-//         };
-
-
-//         res.cookie('accessToken', newAccessToken,cookiesOption);
-
-//         return res.status(200).json({
-//             message: "Token refreshed successfully.",
-//             status: true,
-//             error: false,
-//             data: { accessToken: newAccessToken },
-//         });
-//     } catch (e) {
-//         return res.status(500).json({
-//             message: "Internal server error.",
-//             status: false,
-//             error: true,
-//             e,
-//         });
-//     }
-// }
-
-
-// export  async function verifyToken(req, res) {
-    
-//     const token = req.headers.authorization?.split(' ')[1];
-//     if (!token) return res.status(401).json({ message: 'Token is required' });
+      // Hardcoded course IDs
+      const courseIds = {
+        BTECH: "67e78c853fb39fa1ee791d19",
+        MCA: "67e78c853fb39fa1ee791d1a",
+        MBA: "67e78c853fb39fa1ee791d1b",
+        BBA: "67e78c853fb39fa1ee791d1c",
+      };
   
-//     try {
-//       const verified = jwt.verify(token, process.env.SECRET_KEY_ACCESS_TOKEN);
-//       res.status(200).json({ valid: true, user: verified });
-//     } catch (err) {
-//       res.status(403).json({ valid: false, message: 'Invalid or expired token' });
+      // Filtering subjects based on their assigned courseId
+      const btechSubjects = insertedSubjects
+        .filter(sub => sub.courseId.toString() === courseIds.BTECH)
+        .map(sub => sub._id);
+  
+      const mcaSubjects = insertedSubjects
+        .filter(sub => sub.courseId.toString() === courseIds.MCA)
+        .map(sub => sub._id);
+  
+      const mbaSubjects = insertedSubjects
+        .filter(sub => sub.courseId.toString() === courseIds.MBA)
+        .map(sub => sub._id);
+  
+      const bbaSubjects = insertedSubjects
+        .filter(sub => sub.courseId.toString() === courseIds.BBA)
+        .map(sub => sub._id);
+  
+      // Update courses with the respective subjects
+      await Courses.findByIdAndUpdate(courseIds.BTECH, { $push: { subjects: { $each: btechSubjects } } });
+      await Courses.findByIdAndUpdate(courseIds.MCA, { $push: { subjects: { $each: mcaSubjects } } });
+      await Courses.findByIdAndUpdate(courseIds.MBA, { $push: { subjects: { $each: mbaSubjects } } });
+      await Courses.findByIdAndUpdate(courseIds.BBA, { $push: { subjects: { $each: bbaSubjects } } });
+  
+      console.log("Subjects linked to courses successfully!");
+      res.status(200).json({ message: "Subjects stored and linked!" });
+    } catch (error) {
+      console.error("Error:", error);
+      res.status(500).json({ error: "Something went wrong!" });
+    }
+  };
+
+// const Academic = require("./models/Academic"); // Adjust path
+// const mongoose = require("mongoose");
+
+// async function insertSubjects() {
+//   // Fetch course IDs
+//   const mcaCourse = await Course.findOne({ courseCode: "MCA202" });
+//   const mbaCourse = await Course.findOne({ courseCode: "MBA303" });
+
+//   if (!mcaCourse || !mbaCourse) {
+//     console.error("Courses not found!");
+//     return;
+//   }
+
+//   const subjectsData = [
+//     // MCA Subjects (6 Semesters, 5 each)
+//     { courseId: mcaCourse._id, subject: "Computer Fundamentals", code: "MCA101", subjectType: "Theory", semester: "1st", year: 1 },
+//     { courseId: mcaCourse._id, subject: "Mathematical Foundations", code: "MCA102", subjectType: "Theory", semester: "1st", year: 1 },
+//     { courseId: mcaCourse._id, subject: "C Programming", code: "MCA103", subjectType: "Practical", semester: "1st", year: 1 },
+//     { courseId: mcaCourse._id, subject: "Database Management Systems", code: "MCA104", subjectType: "Theory", semester: "1st", year: 1 },
+//     { courseId: mcaCourse._id, subject: "Operating Systems", code: "MCA105", subjectType: "Theory", semester: "1st", year: 1 },
+
+//     { courseId: mcaCourse._id, subject: "Object-Oriented Programming", code: "MCA201", subjectType: "Practical", semester: "2nd", year: 1 },
+//     { courseId: mcaCourse._id, subject: "Software Engineering", code: "MCA202", subjectType: "Theory", semester: "2nd", year: 1 },
+    
+//     // MBA Subjects (4 Semesters, 5 each)
+//     { courseId: mbaCourse._id, subject: "Principles of Management", code: "MBA101", subjectType: "Theory", semester: "1st", year: 1 },
+//     { courseId: mbaCourse._id, subject: "Financial Accounting", code: "MBA102", subjectType: "Theory", semester: "1st", year: 1 },
+//     { courseId: mbaCourse._id, subject: "Business Communication", code: "MBA103", subjectType: "Theory", semester: "1st", year: 1 },
+//     { courseId: mbaCourse._id, subject: "Quantitative Methods", code: "MBA104", subjectType: "Theory", semester: "1st", year: 1 },
+//     { courseId: mbaCourse._id, subject: "Business Law", code: "MBA105", subjectType: "Theory", semester: "1st", year: 1 },
+//   ];
+
+//   // Insert subjects
+//   const insertedSubjects = await Academic.insertMany(subjectsData);
+//   console.log("Subjects Inserted:", insertedSubjects);
+
+//   // Update courses with subject IDs
+//   const subjectIds = insertedSubjects.map(sub => sub._id);
+//   await Course.findByIdAndUpdate(mcaCourse._id, { $push: { subjects: { $each: subjectIds } } });
+//   await Course.findByIdAndUpdate(mbaCourse._id, { $push: { subjects: { $each: subjectIds } } });
+
+//   console.log("Subjects linked to courses successfully!");
+// }
+
+// insertSubjects();
+
+
+// const insertSubjects = async () => {
+//     const btechCourse = await Course.findOne({ courseCode: "BT101" });
+//     const bbaCourse = await Course.findOne({ courseCode: "BBA404" });
+  
+//     if (!btechCourse || !bbaCourse) {
+//       console.error("Courses not found!");
+//       return;
 //     }
+  
+//     const subjectsData = [
+//       // B.Tech Subjects (8 Semesters, 5 each)
+  
+//       // Continue similarly for 4th to 8th semesters...
+  
+//       // BBA Subjects (6 Semesters, 5 each)
+  
+//       // Continue similarly for 3rd to 6th semesters...
+//     ];
+  
+//     // Insert subjects
+//     const insertedSubjects = await Academic.insertMany(subjectsData);
+//     console.log("Subjects Inserted:", insertedSubjects);
+  
+//     // Update courses with subject IDs
+//     const subjectIds = insertedSubjects.map(sub => sub._id);
+//     await Course.findByIdAndUpdate(btechCourse._id, { $push: { subjects: { $each: subjectIds } } });
+//     await Course.findByIdAndUpdate(bbaCourse._id, { $push: { subjects: { $each: subjectIds } } });
+  
+//     console.log("Subjects linked to courses successfully!");
 //   };
   
-// export const getProfile = async (req, res) => {
-// 	try {
-// 		res.status(200).json({user : req.user});
-// 	} catch (error) {
-// 		res.status(500).json({ message: "Server error", error: error.message });
-// 	}
-// };
+//   insertSubjects();
+  

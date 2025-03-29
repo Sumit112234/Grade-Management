@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { format } from 'date-fns';
+import { format ,parseISO} from 'date-fns';
 import { addAttendance, addCourses } from '../adminUtils/addAttendance';
 
 const CounselorAttendancePage = () => {
@@ -11,6 +11,72 @@ const CounselorAttendancePage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+
+
+
+    // -----------------------
+  // function transformStudentData(rawStudents) {
+  //   // Track unique courses to create a consolidated courses array
+  //   const coursesMap = new Map();
+  //   let courseIdCounter = 1;
+  
+  //   // Transform students and collect unique courses
+  //   const transformedStudents = rawStudents.map((student, index) => {
+  //     // Generate unique student identifiers
+  //     const studentId = `S${(1000 + index).toString()}`;
+  
+  //     // Process each student's courses
+  //     const studentCourses = student.courses.map(course => {
+  //       // Create a unique course identifier or use existing
+  //       let courseEntry = Array.from(coursesMap.entries())
+  //         .find(([_, courseInfo]) => courseInfo.name === `${course.courseName} - ${course.department}`);
+  
+  //       if (!courseEntry) {
+  //         // If course doesn't exist, create a new entry
+  //         const newCourseId = courseIdCounter++;
+  //         const newCourseCode = `COURSE${newCourseId.toString().padStart(3, '0')}`;
+  //         const newCourseName = `${course.courseName} - ${course.department}`;
+  
+  //         courseEntry = [newCourseId, {
+  //           id: newCourseId,
+  //           code: newCourseCode,
+  //           name: newCourseName
+  //         }];
+  
+  //         coursesMap.set(newCourseId, courseEntry[1]);
+  //       }
+  
+  //       // Use the existing or newly created course
+  //       const [courseId, courseInfo] = courseEntry;
+  
+  //       return {
+  //         id: student.id || index + 1,
+  //         studentId: studentId,
+  //         name: student.name,
+  //         course: courseInfo.name,
+  //         courseId: courseId,
+  //         email: student.email,
+  //         image: student.profilePic || `/api/placeholder/100/100`,
+  //         attendance: null
+  //       };
+  //     });
+  
+  //     return studentCourses[0]; // Return the first course entry for the student
+  //   });
+  
+  //   // Convert coursesMap to an array
+  //   const transformedCourses = Array.from(coursesMap.values());
+  
+  //   return {
+  //     students: transformedStudents,
+  //     courses: transformedCourses
+  //   };
+  // }
+  
+
+  // const { students, courses } = transformStudentData(rawStudentData);
+
+  // -------------------------
   
   // Mock data - would come from API in production
   const [courses, setCourses] = useState([
@@ -64,7 +130,7 @@ const CounselorAttendancePage = () => {
       id: 5, 
       studentId: 'S1005', 
       name: 'Casey Brown', 
-      course: 'PHYS 201 - Physics II',
+      course: 'PHYS 201 - Physics I',
       courseId: 3,
       email: 'casey.b@university.edu',
       image: '/api/placeholder/100/100',
@@ -124,8 +190,6 @@ const CounselorAttendancePage = () => {
   
   // Submit attendance for all students
   const submitAttendance = async() => {
-
-   
     // Validate that all students have an attendance status
     const unrecordedStudents = filteredStudents.filter(student => student.attendance === null);
     
@@ -135,27 +199,65 @@ const CounselorAttendancePage = () => {
       return;
     }
     
-    // In production, this would be an API call to save attendance data
-    const attendanceDataPre = filteredStudents.map((student)=>{
-      return {
-        studentId : '67cbdf6a9081457c265d284f',// student.studentId,
-        timeIn : student.timeIn,
-        timeOut : student.timeOut,
-        status : student.attendance
-      }
-    })
-    console.log( courses[selectedCourse])
-    let cid = courses[selectedCourse]?.code;
-    const attendanceData = {
-      students : attendanceDataPre,
-      course : '67cd9bb59f6b394057f7ba39', //cid,
-      date : selectedDate,
+    // Prepare attendance records according to the new schema
+    const attendanceRecords = filteredStudents.map((student) => ({
+      studentId: student.studentId, // Assuming this is now an ObjectId string
+      courseId: selectedCourseId || student.courseId, // Use selected course or student's course
+      date: parseISO(selectedDate), // Convert date string to Date object
+      timeIn: student.timeIn || null,
+      timeOut: student.timeOut || null,
+      status: student.attendance || 'Absent', // Default to Absent if no status
+      note: '' // Optional note field - can be expanded later
+    }));
+    
+    try {
+      console.log("Submitting attendance records:", attendanceRecords);
+      await addAttendance(attendanceRecords);
+      
+      setSuccessMessage('Attendance successfully recorded!');
+      setTimeout(() => setSuccessMessage(''), 5000);
+    } catch (error) {
+      console.error("Error submitting attendance:", error);
+      setErrorMessage('Failed to submit attendance. Please try again.');
+      setTimeout(() => setErrorMessage(''), 5000);
     }
-    console.log("Submitting attendance for:", selectedDate, selectedCourse, filteredStudents,attendanceData);
-    await addAttendance(attendanceData);
-    setSuccessMessage('Attendance successfully recorded!');
-    setTimeout(() => setSuccessMessage(''), 5000);
   };
+  
+  
+
+  // const submitAttendance = async() => {
+
+   
+  //   // Validate that all students have an attendance status
+  //   const unrecordedStudents = filteredStudents.filter(student => student.attendance === null);
+    
+  //   if (unrecordedStudents.length > 0) {
+  //     setErrorMessage(`${unrecordedStudents.length} students still need attendance recorded.`);
+  //     setTimeout(() => setErrorMessage(''), 5000);
+  //     return;
+  //   }
+    
+  //   // In production, this would be an API call to save attendance data
+  //   const attendanceDataPre = filteredStudents.map((student)=>{
+  //     return {
+  //       studentId : '67cbdf6a9081457c265d284f',// student.studentId,
+  //       timeIn : student.timeIn,
+  //       timeOut : student.timeOut,
+  //       status : student.attendance
+  //     }
+  //   })
+  //   console.log( courses[selectedCourse])
+  //   let cid = courses[selectedCourse]?.code;
+  //   const attendanceData = {
+  //     students : attendanceDataPre,
+  //     course : '67cd9bb59f6b394057f7ba39', //cid,
+  //     date : selectedDate,
+  //   }
+  //   console.log("Submitting attendance for:", selectedDate, selectedCourse, filteredStudents,attendanceData);
+  //   await addAttendance(attendanceData);
+  //   setSuccessMessage('Attendance successfully recorded!');
+  //   setTimeout(() => setSuccessMessage(''), 5000);
+  // };
   
   // Animation variants
   const containerVariants = {

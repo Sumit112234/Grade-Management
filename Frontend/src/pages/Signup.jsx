@@ -71,6 +71,9 @@ const Signup = () => {
       setLoading(false);
       navigate('/');
     })
+    .catch((e)=>{
+      setLoading(false);
+    })
     setTimeout(() => {
       // setLoading(false);
       console.log('Signup attempt with:', formData);

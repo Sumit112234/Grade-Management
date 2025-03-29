@@ -15,8 +15,8 @@ import { useStudent } from '../context/userContext';
 import { analyseReport } from '../utils/analyseReport';
 
 const AcademicAnalysis = () => {
-  // const { student } = useStudent();
-  const student  = {
+  const { student } = useStudent();
+  const student1  = {
     "name": "John Doe",
     "email": "johndoe@example.com",
     "phone": "9876543210",

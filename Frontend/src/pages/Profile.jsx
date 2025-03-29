@@ -498,7 +498,7 @@ useEffect(() => {
       setLoading(true);
       // Simulating API delay
       setTimeout(() => {
-        setStudentData(studentData);
+        setStudentData(student);
         setLoading(false);
       }, 1000);
     } catch (err) {
@@ -683,11 +683,11 @@ useEffect(() => {
 >
   {profileImage ? (
     <img src={profileImage} alt="Profile" className="h-full w-full object-cover" />
-  ) : student.profilePic ? (
-    <img src={student.profilePic} alt="Profile" className="h-full w-full object-cover" />
+  ) : studentData.profilePic ? (
+    <img src={studentData.profilePic} alt="Profile" className="h-full w-full object-cover" />
   ) : (
     <div className="h-full w-full bg-gray-200 flex items-center justify-center">
-      {student?.name?.charAt(0)}
+      {studentData?.name?.charAt(0)}
     </div>
   )}
   

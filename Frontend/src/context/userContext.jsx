@@ -60,7 +60,8 @@ export const StudentProvider = ({ children }) => {
   useEffect(() => {
     const getStudent = async () => {
       const data = await fetchStudent();
-      setStudent(data.user);
+      console.log(data)
+      setStudent(data);
     };
     getStudent();
   }, []);

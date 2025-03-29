@@ -1,99 +1,101 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { useStudent } from '../context/userContext';
+
 
 const AttendancePage = () => {
   // States for the attendance data and filters
+  
+
+  const transformAttendanceData = (attendanceList, courses) => {
+    const calculateDuration = (timeIn, timeOut) => {
+      if (timeIn === "--:--" || timeOut === "--:--") return "--";
+  
+      const parseTime = (time) => {
+        const [hours, minutes] = time.split(/[:\s]/);
+        const isPM = time.includes("PM");
+        let hour = parseInt(hours);
+        const minute = parseInt(minutes);
+        if (isPM && hour !== 12) hour += 12;
+        if (!isPM && hour === 12) hour = 0;
+        return hour * 60 + minute;
+      };
+  
+      const diff = parseTime(timeOut) - parseTime(timeIn);
+      const hours = Math.floor(diff / 60);
+      const minutes = diff % 60;
+  
+      return `${hours}h ${minutes}m`;
+    };
+  
+    return attendanceList.map((record, index) => {
+      const course = courses.find(c => c.id === record.courseId.id);
+      
+      return {
+        id: index + 1,
+        date: new Date(record.date).toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric"
+        }),
+        course: course ? `${course.code} - ${course.courseName}` : "Unknown Course",
+        status: record.status,
+        percentage: record.status === "Present" ? 100 : record.status === "Late" ? 75 : 0,
+        timeIn: record.timeIn,
+        timeOut: record.timeOut,
+        duration: calculateDuration(record.timeIn, record.timeOut)
+      };
+    });
+  };
+
+
+  const {student} = useStudent()
+  console.log(student , " from attendance");
   const [currentMonth, setCurrentMonth] = useState('March 2025');
   const [selectedCourse, setSelectedCourse] = useState('All Courses');
-  const [attendanceData, setAttendanceData] = useState([
-    { 
-      id: 1, 
-      date: 'March 7, 2025', 
-      course: 'CS 401 - Advanced Programming', 
-      status: 'Present', 
-      percentage: 100,
-      timeIn: '09:30 AM',
-      timeOut: '11:20 AM',
-      duration: '1h 50m'
-    },
-    { 
-      id: 2, 
-      date: 'March 6, 2025', 
-      course: 'MATH 301 - Applied Calculus', 
-      status: 'Late', 
-      percentage: 60,
-      timeIn: '01:15 PM',
-      timeOut: '03:00 PM',
-      duration: '1h 45m'
-    },
-    { 
-      id: 3, 
-      date: 'March 6, 2025', 
-      course: 'CS 401 - Advanced Programming', 
-      status: 'Present', 
-      percentage: 100,
-      timeIn: '09:30 AM',
-      timeOut: '11:20 AM',
-      duration: '1h 50m'
-    },
-    { 
-      id: 4, 
-      date: 'March 5, 2025', 
-      course: 'PHYS 201 - Physics II', 
-      status: 'Absent', 
-      percentage: 0,
-      timeIn: '--:--',
-      timeOut: '--:--',
-      duration: '--'
-    },
-    { 
-      id: 5, 
-      date: 'March 5, 2025', 
-      course: 'MATH 301 - Applied Calculus', 
-      status: 'Present', 
-      percentage: 100,
-      timeIn: '01:00 PM',
-      timeOut: '03:00 PM',
-      duration: '2h 00m'
-    },
-    { 
-      id: 6, 
-      date: 'March 4, 2025', 
-      course: 'CS 401 - Advanced Programming', 
-      status: 'Present', 
-      percentage: 100,
-      timeIn: '09:30 AM',
-      timeOut: '11:20 AM',
-      duration: '1h 50m'
-    },
-    { 
-      id: 7, 
-      date: 'March 3, 2025', 
-      course: 'CS 401 - Advanced Programming', 
-      status: 'Excused', 
-      percentage: 100,
-      timeIn: '--:--',
-      timeOut: '--:--',
-      duration: '--',
-      note: 'Medical appointment'
-    },
-  ]);
+  
+  const [attendanceData, setAttendanceData] = useState( []
+);
+
+
+
 
   // Filter the attendance data based on the selected course
   const filteredAttendance = selectedCourse === 'All Courses' 
     ? attendanceData
     : attendanceData.filter(record => record.course === selectedCourse);
 
+
+  const [courses,setCourses] = useState([]);
+  useEffect(()=>{
+    // courses se nahi aayega subject se aayega
+    if(student)
+    {
+
+      let courseData = student.attendance.map((data)=>{
+        return {
+          ...data.courseId
+        }
+      })
+      console.log({courseData});
+      let ATData = transformAttendanceData(student.attendance,courseData)
+      setAttendanceData(ATData);
+      console.log(ATData)
+      setCourses(['All Courses', ...new Set(ATData.map(record => record.course
+      ))])
+      console.log(['All Courses', ...new Set(ATData.map(record => record.course
+      ))])
+    }
+  },[])
   // Get unique courses from the attendance data
-  const courses = ['All Courses', ...new Set(attendanceData.map(record => record.course))];
 
   // Calculate attendance statistics
   const calculateStats = () => {
-    const total = attendanceData.length;
-    const present = attendanceData.filter(record => record.status === 'Present').length;
-    const late = attendanceData.filter(record => record.status === 'Late').length;
-    const absent = attendanceData.filter(record => record.status === 'Absent').length;
-    const excused = attendanceData.filter(record => record.status === 'Excused').length;
+    const total = filteredAttendance.length;
+    const present = filteredAttendance.filter(record => record.status === 'Present').length;
+    const late = filteredAttendance.filter(record => record.status === 'Late').length;
+    const absent = filteredAttendance.filter(record => record.status === 'Absent').length;
+    const excused = filteredAttendance.filter(record => record.status === 'Excused').length;
     
     const presentPercent = Math.round((present / total) * 100);
     const latePercent = Math.round((late / total) * 100);

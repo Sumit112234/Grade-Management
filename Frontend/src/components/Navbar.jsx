@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { LogOut } from 'lucide-react';
 import { useStudent } from '../context/userContext';
 import { analyseReport } from '../utils/analyseReport';
+import { fetchAllStudents } from '../utils/api';
+import { postUtility } from '../utils/studentUtility';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,7 +17,8 @@ const Navbar = () => {
     return location.pathname === path;
   };
 
-  const handleLogout = () => {
+  const handleLogout = async() => {
+    console.log('hello ji')
     let stu = {
       "student": {
         "name": "John Doe",
@@ -51,7 +54,11 @@ const Navbar = () => {
       }
     }
     
-    analyseReport(stu);
+    postUtility();
+    // storeCourseData();
+    // let res = await fetchAllStudents();
+    // console.log(res);
+    // analyseReport(stu);
     // logout();
     // navigate('/login');
   };

@@ -154,13 +154,13 @@ export async function logoutUser(req,res){
               maxAge: 15 * 60 * 1000, // 15 minutes
           }
 
-          removeCookies(res);
           // res.clearCookie('accessToken',cookiesOption);
           // res.clearCookie('refreshToken',cookiesOption);
   
           //  await Student.findByIdAndUpdate( user._id,{
-          //     refresh_token : "",
-          // })
+            //     refresh_token : "",
+            // })
+            removeCookies(res);
        
           return res.status(200).json({
                   message: "Successfully logout.",
@@ -300,19 +300,16 @@ export const getStudent = async (req, res) => {
 		res.status(500).json({ message: "Server error", error: error.message });
 	}
 };
-// export const getStudents = async (req, res) => {
-//   try {
-//     const id = req.params;
-//     const student = await Student.find({_id : id})
-//       .populate("academicRecords")
-//       .populate("skills")
-//       .populate("extracurricularActivities")
-//       .populate("courses");
-//     res.status(200).json({data : student});
-//   } catch (error) {
-//     res.status(500).json({ message: "Server Error" });
-//   }
-// };
+export const getStudents = async (req, res) => {
+  try {
+ 
+    const student = await Student.find()
+     
+    res.status(200).json({data : student});
+  } catch (error) {
+    res.status(500).json({ message: "Server Error" });
+  }
+};
 
 // export const addStudent = async (req, res) => {
 //   const { name, email, phone, age, grade, type } = req.body;

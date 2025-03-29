@@ -12,7 +12,11 @@ import AcademicAnalysis from './pages/Analysis'
 import AddCourses from './adminPages/AddCourse'
 import Protected from './pages/Protected'
 
-// I am creating "Student Carrer Counselling using academic performance data analysis" project using MERN.
+// I am creating "Student Carrer Counselling using academic performance data analysis" project using MERN with tailwindcss and framer-motion with a purple and white theme.
+
+// Create Admin page by which admin can create courses and other things provided below.
+
+
 
 function App() {
   
