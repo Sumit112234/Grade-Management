@@ -65,6 +65,7 @@ const Signup = () => {
     
     formData.type = formData.role;
     formData.name = formData.fullName;
+    formData.userType = formData.type;
     
     signup(formData)
     .then(()=>{

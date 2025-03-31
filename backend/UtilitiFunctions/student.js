@@ -66,9 +66,9 @@ export async function saveUser(req,res){
   try{
 
       
-      const {name, email, password , type, pic,enrollment} = req.body.data;
+      const {name, email, password , userType, pic,enrollment} = req.body.data;
 
-      console.log(name, email, password , type, pic);
+      console.log(name, email, password , userType, pic);
       if(!name || !email || !password)
       {
            res.status(500).json({
@@ -98,7 +98,7 @@ export async function saveUser(req,res){
           name,
           email : email.toLowerCase(),
           password : hashPass,
-          type,
+          userType,
           pic : pic ? pic : "",
           enrollment : enrollment ? enrollment : getEnroll()
       }
@@ -304,6 +304,8 @@ export const getStudents = async (req, res) => {
   try {
  
     const student = await Student.find()
+    .populate('course')
+    .populate('academicRecords.subjectId');
      
     res.status(200).json({data : student});
   } catch (error) {

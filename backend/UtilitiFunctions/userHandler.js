@@ -1,5 +1,7 @@
+import bcryptjs from "bcryptjs";
 import Academic from "../models/Academic.js";
 import Courses from "../models/Course.js"
+import Student from "../models/Student.js";
 
 const coursesData = [
     {
@@ -126,49 +128,126 @@ const subjects =   [
     { courseId: "67e78c853fb39fa1ee791d1c", subject: "Corporate Finance", code: "BBA205", subjectType: "Theory", semester: "2nd", year: 1 }
   ]
     
+
+  const courseIds = {
+    BTECH: "67e78c853fb39fa1ee791d19",
+    MCA: "67e78c853fb39fa1ee791d1a", // done
+    MBA: "67e78c853fb39fa1ee791d1b",
+    BBA: "67e78c853fb39fa1ee791d1c",
+  };
+
+
   export const utilityFunction = async (req, res) => {
+
     try {
-      // Insert subjects into the database
-      const insertedSubjects = await Academic.insertMany(subjects);
-      console.log("Subjects Inserted:", insertedSubjects);
+      // Fetch all subjects from MCA's 1st semester
+      const mcaFirstSemSubjects = await Academic.find({ 
+        courseId: courseIds.BBA, 
+        semester: "1st" 
+      });
+
+      console.log(mcaFirstSemSubjects);
   
-      // Hardcoded course IDs
-      const courseIds = {
-        BTECH: "67e78c853fb39fa1ee791d19",
-        MCA: "67e78c853fb39fa1ee791d1a",
-        MBA: "67e78c853fb39fa1ee791d1b",
-        BBA: "67e78c853fb39fa1ee791d1c",
-      };
+      if (!mcaFirstSemSubjects.length) {
+        return res.status(404).json({ error: "No subjects found for MCA 1st semester" });
+      }
   
-      // Filtering subjects based on their assigned courseId
-      const btechSubjects = insertedSubjects
-        .filter(sub => sub.courseId.toString() === courseIds.BTECH)
-        .map(sub => sub._id);
+      // Prepare academic records for each student
+      const academicRecords = mcaFirstSemSubjects.map(sub => ({
+        subjectId: sub._id,
+        marks: 0,
+        totalMarks: 100, // Assuming total marks is 100 for each subject
+        grade: "N/A",
+      }));
   
-      const mcaSubjects = insertedSubjects
-        .filter(sub => sub.courseId.toString() === courseIds.MCA)
-        .map(sub => sub._id);
+      // Student data array
+      const studentsData = [
+        { name: "Ritika Jain", email: "ritika.jain@example.com", phone: "9876543211", enrollment: "BBA2001" },
+        { name: "Varun Tiwari", email: "varun.tiwari@example.com", phone: "9876543212", enrollment: "BBA2002" },
+        { name: "Simran Kaur", email: "simran.kaur@example.com", phone: "9876543213", enrollment: "BBA2003" },
+        { name: "Kunal Roy", email: "kunal.roy@example.com", phone: "9876543214", enrollment: "BBA2004" },
+        { name: "Sonia Das", email: "sonia.das@example.com", phone: "9876543215", enrollment: "BBA2005" },
+        { name: "Rajesh Nair", email: "rajesh.nair@example.com", phone: "9876543216", enrollment: "BBA2006" },
+        { name: "Neetu Bansal", email: "neetu.bansal@example.com", phone: "9876543217", enrollment: "BBA2007" },
+        { name: "Sandeep Malhotra", email: "sandeep.malhotra@example.com", phone: "9876543218", enrollment: "BBA2008" },
+      ];
+
+      
+      let salt = await bcryptjs.genSalt(13);
+      let hashPass = await bcryptjs.hash("securepassword",salt);
+        
   
-      const mbaSubjects = insertedSubjects
-        .filter(sub => sub.courseId.toString() === courseIds.MBA)
-        .map(sub => sub._id);
+      // Add common fields
+      const studentsToInsert = studentsData.map(student => ({
+        ...student,
+        password: hashPass, // Hash this in production
+        age: 22,
+        grade: "N/A",
+        profilePic: "",
+        userType: "student",
+        semester: "1st",
+        academicRecords,
+        course: courseIds.BBA,
+        skills: [],
+        extracurricularActivities: [],
+        attendance: []
+      }));
   
-      const bbaSubjects = insertedSubjects
-        .filter(sub => sub.courseId.toString() === courseIds.BBA)
-        .map(sub => sub._id);
+      // Insert students into the database
+      const insertedStudents = await Student.insertMany(studentsToInsert);
+      console.log("Students Inserted:", insertedStudents);
   
-      // Update courses with the respective subjects
-      await Courses.findByIdAndUpdate(courseIds.BTECH, { $push: { subjects: { $each: btechSubjects } } });
-      await Courses.findByIdAndUpdate(courseIds.MCA, { $push: { subjects: { $each: mcaSubjects } } });
-      await Courses.findByIdAndUpdate(courseIds.MBA, { $push: { subjects: { $each: mbaSubjects } } });
-      await Courses.findByIdAndUpdate(courseIds.BBA, { $push: { subjects: { $each: bbaSubjects } } });
-  
-      console.log("Subjects linked to courses successfully!");
-      res.status(200).json({ message: "Subjects stored and linked!" });
+      res.status(201).json({ message: "Students created successfully!", students: insertedStudents });
     } catch (error) {
       console.error("Error:", error);
       res.status(500).json({ error: "Something went wrong!" });
     }
+    // res.json({'hello ji' : 'okay'});
+    // let response = await 
+    // try {
+
+
+      // Insert subjects into the database
+    //   const insertedSubjects = await Academic.insertMany(subjects);
+    //   console.log("Subjects Inserted:", insertedSubjects);
+  
+    //   // Hardcoded course IDs
+      // const courseIds = {
+      //   BTECH: "67e78c853fb39fa1ee791d19",
+      //   MCA: "67e78c853fb39fa1ee791d1a",
+      //   MBA: "67e78c853fb39fa1ee791d1b",
+      //   BBA: "67e78c853fb39fa1ee791d1c",
+      // };
+  
+    //   // Filtering subjects based on their assigned courseId
+    //   const btechSubjects = insertedSubjects
+    //     .filter(sub => sub.courseId.toString() === courseIds.BTECH)
+    //     .map(sub => sub._id);
+  
+    //   const mcaSubjects = insertedSubjects
+    //     .filter(sub => sub.courseId.toString() === courseIds.MCA)
+    //     .map(sub => sub._id);
+  
+    //   const mbaSubjects = insertedSubjects
+    //     .filter(sub => sub.courseId.toString() === courseIds.MBA)
+    //     .map(sub => sub._id);
+  
+    //   const bbaSubjects = insertedSubjects
+    //     .filter(sub => sub.courseId.toString() === courseIds.BBA)
+    //     .map(sub => sub._id);
+  
+    //   // Update courses with the respective subjects
+    //   await Courses.findByIdAndUpdate(courseIds.BTECH, { $push: { subjects: { $each: btechSubjects } } });
+    //   await Courses.findByIdAndUpdate(courseIds.MCA, { $push: { subjects: { $each: mcaSubjects } } });
+    //   await Courses.findByIdAndUpdate(courseIds.MBA, { $push: { subjects: { $each: mbaSubjects } } });
+    //   await Courses.findByIdAndUpdate(courseIds.BBA, { $push: { subjects: { $each: bbaSubjects } } });
+  
+    //   console.log("Subjects linked to courses successfully!");
+    //   res.status(200).json({ message: "Subjects stored and linked!" });
+    // } catch (error) {
+    //   console.error("Error:", error);
+    //   res.status(500).json({ error: "Something went wrong!" });
+    // }
   };
 
 // const Academic = require("./models/Academic"); // Adjust path

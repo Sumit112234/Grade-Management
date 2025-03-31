@@ -21,6 +21,10 @@ import Protected from './pages/Protected'
 function App() {
   
 
+  // admin ki attendence mai date alag fir select course select semester search student aur notes niche ka 
+  // bhi chalna chaiye
+
+  // login mai bhi type ho sakta h
   return (
    <>
     <BrowserRouter>

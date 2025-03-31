@@ -17,8 +17,11 @@ const Login = () => {
   useEffect(()=>{
     console.log(student)
     if(student && student.email)
-        navigate('/');
+      navigate('/');
+      console.log('user present')
   },[student])
+
+  // signup krwana h fir dekhna h user set sahi ho raha h k nahi
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

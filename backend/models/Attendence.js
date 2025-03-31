@@ -4,10 +4,9 @@ import mongoose from "mongoose";
 
 const attendanceSchema = new mongoose.Schema(
   {
-    studentId: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: "Student", 
-      required: true 
+    studentEnroll: { 
+      type : String,
+      required : true,
     },
     courseId: { 
       type: mongoose.Schema.Types.ObjectId, 
@@ -31,6 +30,11 @@ const attendanceSchema = new mongoose.Schema(
     },
     note: { 
       type: String, // For special cases like "Medical Appointment"
+    },
+    subject : {  
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "Academic", 
+      required: true 
     }
   },
   { timestamps: true }

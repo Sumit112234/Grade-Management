@@ -2,22 +2,47 @@ import Attendance from "../models/Attendence.js";
 import Student from "../models/Student.js";
 
 export const addAttendance = async (req, res) => {
-  const { studentId, date, status } = req.body;
 
   try {
-    const attendance = new Attendance({ studentId, date, status });
-    await attendance.save();
+    const attendanceData = req.body; // Expecting an array of attendance objects
 
-    // Add attendance ID to the student record
-    await Student.findByIdAndUpdate(studentId, {
-      $push: { attendance: attendance._id },
-    });
+    if (!Array.isArray(attendanceData) || attendanceData.length === 0) {
+      return res.status(400).json({ message: "Invalid attendance data." });
+    }
 
-    res.status(201).json(attendance);
+    // Transform the data to match the schema
+    const formattedAttendance = attendanceData.map((entry) => ({
+      studentEnroll: entry.studentId,
+      courseId: entry.course,
+      date: new Date(entry.date), // Ensure it's stored as Date type
+      timeIn: entry.timeIn || null,
+      timeOut: entry.timeOut || null,
+      status: entry.status,
+      note: entry.note || "",
+      subject: entry.subject,
+    }));
+
+    // Save all attendance records in one go
+    const savedAttendance = await Attendance.insertMany(formattedAttendance);
+
+    // Update each student's attendance field with the newly created records
+    await Promise.all(
+      savedAttendance.map(async (record) => {
+        await Student.findOneAndUpdate(
+          { enrollment: record.studentEnroll }, // Find student by enrollment number
+          { $push: { attendance: record._id } }, // Push the attendance ID into the student's attendance array
+          { new: true }
+        );
+      })
+    );
+
+    res.status(201).json({ message: "Attendance recorded successfully!" });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error("Error storing attendance:", error);
+    res.status(500).json({ message: "Internal server error." });
   }
 };
+
 
 export const getAttendanceByStudent = async (req, res) => {
   const { studentId } = req.params;

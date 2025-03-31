@@ -11,17 +11,17 @@ const studentSchema = new mongoose.Schema(
     profilePic : {type : String},
     enrollment : {type : String , required : true},
     userType : {type : String , required : true}, // student , teacher
-    semister : {type : String, default : "1st"}, // 1st , 2nd , 3rd, 4th, 5th...
+    semester : {type : String, default : "1st"}, // 1st , 2nd , 3rd, 4th, 5th...
 
     academicRecords: [{
-      marks: { type: Number, required: true }, // all marks current + previous
-      totalMarks: { type: Number, required: true }, // totol of all marks
-      subjectId :{type : mongoose.Schema.Types.ObjectId, ref : "Academic"},
+      marks: { type: Number, default : 0}, // all marks current + previous
+      totalMarks: { type: Number, default : 0 }, // total of all marks
+      subjectId :{type : mongoose.Schema.Types.ObjectId, ref : "Academic", required : true}, 
       grade: { type: String },
     }],
     skills: [{ type: mongoose.Schema.Types.ObjectId, ref: "Skills" }],
     extracurricularActivities: [{ type: mongoose.Schema.Types.ObjectId, ref: "Extracurricular" }],
-    courses: { type: mongoose.Schema.Types.ObjectId, ref: "Course" },
+    course : { type: mongoose.Schema.Types.ObjectId, ref: "Course" },
     attendance: [{ type: mongoose.Schema.Types.ObjectId, ref: "Attendance" }], 
   },
   { timestamps: true }

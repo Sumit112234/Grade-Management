@@ -54,10 +54,10 @@ const Navbar = () => {
       }
     }
     
-    postUtility();
+    // await postUtility();
     // storeCourseData();
-    // let res = await fetchAllStudents();
-    // console.log(res);
+    let res = await fetchAllStudents();
+    console.log(res);
     // analyseReport(stu);
     // logout();
     // navigate('/login');

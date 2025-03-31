@@ -320,5 +320,5 @@ export const fetchAttendance = async (studentId) => {
 
 export const fetchAllStudents = async (studentId) => {
   const res = await axios.get(`${API_URL}/students/all-students`);
-  return res.data;
+  return res.data.data;
 };
