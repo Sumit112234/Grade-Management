@@ -1,6 +1,6 @@
 {
     "version" : 2,
-    "name" : "Guru Electronics",
+    "name" : "Grade Management",
     "builds" : [
         {
             "src" : "./index.js",
