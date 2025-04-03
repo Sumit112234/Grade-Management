@@ -34,6 +34,8 @@ export const StudentProvider = ({ children }) => {
         }
       )
       console.log(res);
+      setStudent(res.data.user);
+
       return true;
     } catch (e) {
       console.log(e);

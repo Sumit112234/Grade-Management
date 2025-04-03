@@ -9,7 +9,7 @@ const AttendancePage = () => {
 
   const transformAttendanceData = (attendanceList, courses) => {
     const calculateDuration = (timeIn, timeOut) => {
-      if (timeIn === "--:--" || timeOut === "--:--") return "--";
+      if (timeIn === "--:--" || !timeIn || !timeOut ||  timeOut === "--:--") return "1h";
   
       const parseTime = (time) => {
         const [hours, minutes] = time.split(/[:\s]/);
@@ -71,6 +71,7 @@ const AttendancePage = () => {
     // courses se nahi aayega subject se aayega
     if(student)
     {
+      console.log(student)
 
       let courseData = student.attendance.map((data)=>{
         return {

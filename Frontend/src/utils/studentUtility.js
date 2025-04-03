@@ -16,3 +16,19 @@ export const postUtility = async (data = {}) => {
     console.error("Error posting utility data:", error);
   }
 }
+
+export const getStudentByEnroll = async (enrollment) => {
+  try {
+    const response = await fetch(`${API_URL}/students/getStudent?enroll=${enrollment}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Error posting utility data:", error);
+  }
+}

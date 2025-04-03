@@ -16,9 +16,13 @@ const Login = () => {
 
   useEffect(()=>{
     console.log(student)
-    if(student && student.email)
-      navigate('/');
-      console.log('user present')
+    if(student)
+     {
+      setTimeout(() => {
+        navigate('/');
+      }, 300);
+     }
+  
   },[student])
 
   // signup krwana h fir dekhna h user set sahi ho raha h k nahi
@@ -33,17 +37,15 @@ const Login = () => {
     
     login(formData)
     .then(()=>{
-      navigate('/');
+      setTimeout(() => {
+        navigate('/');
+      }, 1500);
       setLoading(false);
       
     })
     .catch(()=>setLoading(false));
 
-    setTimeout(() => {
-      // setLoading(false);
-      // Here you would add actual login logic with your backend
-      console.log('Login attempt with:', formData);
-    }, 1500);
+  
   };
 
   return (

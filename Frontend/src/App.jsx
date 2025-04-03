@@ -11,6 +11,7 @@ import CounselorAttendancePage from './adminPages/Attendance'
 import AcademicAnalysis from './pages/Analysis'
 import AddCourses from './adminPages/AddCourse'
 import Protected from './pages/Protected'
+import AcademicReport from './pages/Academics'
 
 // I am creating "Student Carrer Counselling using academic performance data analysis" project using MERN with tailwindcss and framer-motion with a purple and white theme.
 
@@ -18,11 +19,9 @@ import Protected from './pages/Protected'
 
 
 
+
 function App() {
   
-
-  // admin ki attendence mai date alag fir select course select semester search student aur notes niche ka 
-  // bhi chalna chaiye
 
   // login mai bhi type ho sakta h
   return (
@@ -36,6 +35,7 @@ function App() {
         <Route path='/attendance' element={<AttendancePage/>}></Route>
         <Route path='/profile' element={<StudentProfile/>}></Route>
         <Route path='/analysis' element={<AcademicAnalysis/>}></Route>
+        <Route path='/academic' element={<AcademicReport/>}></Route>
 
         {/* admin route */}
 

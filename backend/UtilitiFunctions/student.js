@@ -300,6 +300,47 @@ export const getStudent = async (req, res) => {
 		res.status(500).json({ message: "Server error", error: error.message });
 	}
 };
+
+export const getStudentByFilter = async (req, res) => {
+	try {
+    const { enroll } = req.query; 
+    
+    let user = await Student.findOne({enrollment : enroll})
+    .populate('course')
+    .populate('extracurricularActivities')
+
+    res.status(200).json({
+      user,
+    })
+
+
+	} catch (error) {
+		res.status(500).json({ message: "Server error", error: error.message });
+	}
+};
+
+export const assignCourse = async (req, res) => {
+	try {
+    const { id } = req.query; 
+    
+    
+    let user = await Student.findByIdAndUpdate(id,{
+      course : req.body.id
+    },{ new: true } );
+    // console.log(req.body, user);
+    // user.course = req.body;
+    // await user.save();
+
+    res.status(200).json({
+      user,
+    })
+
+
+	} catch (error) {
+		res.status(500).json({ message: "Server error", error: error.message });
+	}
+};
+
 export const getStudents = async (req, res) => {
   try {
  

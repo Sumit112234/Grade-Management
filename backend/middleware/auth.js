@@ -33,8 +33,8 @@ const auth = async (req, res, next) => {
         .populate("academicRecords")
         .populate("skills")
         .populate("extracurricularActivities")
-        .populate("courses");
-        
+        .populate("course")
+        .populate("attendance")
         req.user = user; 
         // console.log(user);
         // console.log("decode -> ", decode);

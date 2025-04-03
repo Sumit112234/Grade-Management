@@ -56,11 +56,13 @@ const Navbar = () => {
     
     // await postUtility();
     // storeCourseData();
-    let res = await fetchAllStudents();
-    console.log(res);
+    // let res = await fetchAllStudents();
+    // console.log(res);
     // analyseReport(stu);
-    // logout();
-    // navigate('/login');
+    logout()
+    .then(()=>{
+      navigate('/login');
+    })
   };
 
   // Handle scroll event to change navbar appearance on scroll
@@ -84,7 +86,7 @@ const Navbar = () => {
     { title: 'Home', path: '/' },
     { title: 'Academic Analysis', path: '/analysis' },
     { title: 'Attendance', path: '/attendance' },
-    { title: 'Career Paths', path: '/career-paths' },
+    { title: 'Academic', path: '/academic' },
     { title: 'Resources', path: '/resources' },
   ];
 

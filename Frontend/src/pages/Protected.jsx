@@ -6,6 +6,7 @@ import { Navigate } from 'react-router-dom';
 const Protected = ({children}) => {
 
     const { student } = useStudent();
+    console.log('protected')
     
   return (
     <>

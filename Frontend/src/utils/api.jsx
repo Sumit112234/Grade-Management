@@ -3,11 +3,11 @@ import axios from "axios";
 const API_URL = import.meta.env.VITE_APP_Backend_Url;
 
 export const fetchStudent = async () => {
-  // const res = await axios.get(`${API_URL}/students`,{
-  //   withCredentials : true
-  // });
-  // console.log(res)
-  // return res.data;
+  const res = await axios.get(`${API_URL}/students`,{
+    withCredentials : true
+  });
+  console.log(res)
+  return res?.data?.user;
   let data = {
     name: "Aryan Sharma",
     email: "aryan.sharma@example.com",
@@ -315,6 +315,11 @@ export const fetchStudent = async () => {
 
 export const fetchAttendance = async (studentId) => {
   const res = await axios.get(`${API_URL}/attendance/${studentId}`);
+  return res.data;
+};
+
+export const fetchAllCourses = async () => {
+  const res = await axios.get(`${API_URL}/courses`);
   return res.data;
 };
 
