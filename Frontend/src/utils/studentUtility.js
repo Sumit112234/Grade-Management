@@ -32,3 +32,21 @@ export const getStudentByEnroll = async (enrollment) => {
     console.error("Error posting utility data:", error);
   }
 }
+
+export const assignMarksToStudents = async (marksData) => {
+
+  try {
+    const response = await fetch(`${API_URL}/students/assign-marks`, {
+      method: "POST",
+      body: JSON.stringify(marksData),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Error posting utility data:", error);
+  }
+}

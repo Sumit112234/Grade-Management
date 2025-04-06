@@ -6,6 +6,8 @@ import { useStudent } from '../context/userContext';
 import { analyseReport } from '../utils/analyseReport';
 import { fetchAllStudents } from '../utils/api';
 import { postUtility } from '../utils/studentUtility';
+import { updateStudent } from '../utils/userHandler';
+import { generalTips } from '../prompts/prompt';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -54,14 +56,60 @@ const Navbar = () => {
       }
     }
     
+    let data =  {  academicRecords : [
+      {
+         subjectId: {
+           subject: "Introduction to Management",
+           code: "MGT101",
+           subjectType: "Core",
+           semester: "1st"
+         },
+         marks: 78,
+         totalMarks: 100,
+         grade: "B+"
+       },
+       {
+         subjectId: {
+           subject: "Financial Accounting",
+           code: "ACC101",
+           subjectType: "Core",
+           semester: "1st"
+         },
+         marks: 65,
+         totalMarks: 100,
+         grade: "B"
+       },
+       {
+         subjectId: {
+           subject: "Business Communication",
+           code: "COM101",
+           subjectType: "Core",
+           semester: "1st"
+         },
+         marks: 82,
+         totalMarks: 100,
+         grade: "A"
+       }
+     ]};
+
+    let result = await analyseReport(data.academicRecords, generalTips);
+    // await updateStudent(stu);
     // await postUtility();
     // storeCourseData();
     // let res = await fetchAllStudents();
     // console.log(res);
     // analyseReport(stu);
     logout()
-    .then(()=>{
-      navigate('/login');
+    .then((status)=>{
+
+      if(status)
+        toast.success('Logout successful!');
+
+      setTimeout(() => {
+        if(status)
+          navigate('/login');
+        
+      }, 1500);
     })
   };
 
@@ -84,7 +132,7 @@ const Navbar = () => {
   // Links for the navbar
   const navLinks = [
     { title: 'Home', path: '/' },
-    { title: 'Academic Analysis', path: '/analysis' },
+    { title: 'Analysis', path: '/analysis' },
     { title: 'Attendance', path: '/attendance' },
     { title: 'Academic', path: '/academic' },
     { title: 'Resources', path: '/resources' },

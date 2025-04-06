@@ -3,7 +3,7 @@ const API_URL = import.meta.env.VITE_APP_Backend_Url;
 
 export const updateStudent = async(data)=>{
 
-  const res = await axios.put(`${API_URL}/students/update-details`,data,{
+  const res = await axios.post(`${API_URL}/students/update-student`,data,{
     withCredentials : true
   });
   console.log(res)

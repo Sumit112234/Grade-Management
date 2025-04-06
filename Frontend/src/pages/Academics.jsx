@@ -5,6 +5,9 @@ import axios from 'axios';
 import { Download, Book, Award, BarChart } from 'lucide-react';
 import { Document, Page, Text, View, StyleSheet, pdf, Font, Image } from "@react-pdf/renderer";
 import { saveAs } from 'file-saver';
+import { useStudent } from '../context/userContext';
+import { analyseReport } from '../utils/analyseReport';
+import { generalTips, specificTips } from '../prompts/prompt';
 
 // Define PDF styles
 const styles = StyleSheet.create({
@@ -263,10 +266,13 @@ const AcademicReport = () => {
   };
 
   const { id } = useParams();
-  const [student, setStudent] = useState(stu);
+  // const [student, setStudent] = useState(stu);
+  const {student} = useStudent();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('academic');
+  const [generalSuggestion, setGeneralSuggestion] = useState([]);
+  const [subjectSpecificSuggestion, setSubjectSpecificSuggestion] = useState([]);
 
   useEffect(() => {
     const fetchStudentData = async () => {
@@ -286,14 +292,51 @@ const AcademicReport = () => {
     fetchStudentData();
   }, [id]);
 
+  const handleTabChange = async(tab) => {
+
+    setActiveTab(tab);
+    if(tab === 'improvement')
+    {
+      let generalAiResult = await analyseReport(student.academicRecords,generalTips);
+      setGeneralSuggestion(generalAiResult);
+
+      let specificAiResult = await analyseReport(student.academicRecords, specificTips);
+      // console.log(specificAiResult);
+      setSubjectSpecificSuggestion(specificAiResult);
+
+
+    }
+  }
+
+
+  const getGrade = (data)=>{
+    const percentage = (data.marks / data.totalMarks) * 100;
+
+    let grade = 'F';
+    if (percentage >= 90) grade = 'A+';
+    else if (percentage >= 80) grade = 'A';
+    else if (percentage >= 70) grade = 'B+';
+    else if (percentage >= 60) grade = 'B';
+    else if (percentage >= 50) grade = 'C+';
+    else if (percentage >= 40) grade = 'C';
+    else if (percentage >= 33) grade = 'D';
+
+
+    return grade
+
+  }
   const calculateOverallPerformance = () => {
     if (!student || !student.academicRecords || student.academicRecords.length === 0) {
       return { percentage: 0, grade: 'N/A' };
     }
 
+    // console.log("hello I am calulating overall performance")
+
     const totalMarks = student.academicRecords.reduce((acc, record) => acc + record.marks, 0);
     const totalPossibleMarks = student.academicRecords.reduce((acc, record) => acc + record.totalMarks, 0);
     const percentage = (totalMarks / totalPossibleMarks) * 100;
+
+    // console.log(totalMarks, totalPossibleMarks, percentage)
 
     let grade = 'F';
     if (percentage >= 90) grade = 'A+';
@@ -307,20 +350,15 @@ const AcademicReport = () => {
     return { percentage: percentage.toFixed(2), grade };
   };
 
-  const getSubjectsSortedByPerformance = () => {
-    if (!student || !student.academicRecords) return [];
-    
-    return [...student.academicRecords].sort((a, b) => {
-      const percentageA = (a.marks / a.totalMarks) * 100;
-      const percentageB = (b.marks / b.totalMarks) * 100;
-      return percentageA - percentageB;
-    });
-  };
 
-  const generateImprovementSuggestions = () => {
+  useEffect(()=>{
     const weakestSubjects = getSubjectsSortedByPerformance().slice(0, 2);
     const overallPerformance = calculateOverallPerformance();
     
+
+    // let sol = await analyseReport(student.AcademicReport, generalTips);
+    // console.log(sol);
+
     const generalSuggestions = [
       "Create a consistent study schedule with dedicated time for each subject",
       "Use active recall techniques instead of passive reading",
@@ -347,6 +385,57 @@ const AcademicReport = () => {
         ]
       };
     });
+    setGeneralSuggestion(generalSuggestions);
+    setSubjectSpecificSuggestion(subjectSpecificSuggestions);
+    
+  },[])
+
+  const getSubjectsSortedByPerformance = () => {
+    if (!student || !student.academicRecords) return [];
+    
+    return [...student.academicRecords].sort((a, b) => {
+      const percentageA = (a.marks / a.totalMarks) * 100;
+      const percentageB = (b.marks / b.totalMarks) * 100;
+      return percentageA - percentageB;
+    });
+  };
+
+  const generateImprovementSuggestions = () => {
+    const weakestSubjects = getSubjectsSortedByPerformance().slice(0, 2);
+    const overallPerformance = calculateOverallPerformance();
+    
+
+    // let sol = await analyseReport(student.AcademicReport, generalTips);
+    // console.log(sol);
+
+    const generalSuggestions = [
+      "Create a consistent study schedule with dedicated time for each subject",
+      "Use active recall techniques instead of passive reading",
+      "Form or join study groups for collaborative learning",
+      "Break down complex topics into smaller, manageable parts",
+      "Take regular breaks using the Pomodoro technique (25 min study, 5 min break)",
+      "Review your notes within 24 hours after each class",
+      "Practice past exam questions under timed conditions",
+      "Seek help early when you encounter difficulties"
+    ];
+    
+    const subjectSpecificSuggestions = weakestSubjects.map(subject => {
+      const subjectName = subject.subjectId?.subject || "this subject";
+      const percentage = ((subject.marks / subject.totalMarks) * 100).toFixed(1);
+      
+      return {
+        subject: subjectName,
+        percentage,
+        suggestions: [
+          `Meet with your ${subjectName} professor during office hours`,
+          `Find additional practice problems or resources for ${subjectName}`,
+          `Create concise summary notes or flashcards for key concepts in ${subjectName}`,
+          `Allocate 25% more study time for ${subjectName} compared to other subjects`
+        ]
+      };
+    });
+
+    console.log("subject specific : ", subjectSpecificSuggestions)
     
     return { generalSuggestions, subjectSpecificSuggestions };
   };
@@ -774,7 +863,7 @@ const AcademicReport = () => {
           <div className="border-b border-gray-200">
             <nav className="flex -mb-px">
               <button
-                onClick={() => setActiveTab('academic')}
+                onClick={() =>handleTabChange('academic')}
                 className={`py-4 px-6 border-b-2 font-medium text-sm ${
                   activeTab === 'academic' 
                     ? 'border-purple-500 text-purple-600' 
@@ -785,7 +874,7 @@ const AcademicReport = () => {
                 Academic Performance
               </button>
               <button
-                onClick={() => setActiveTab('improvement')}
+                onClick={() => handleTabChange('improvement')}
                 className={`py-4 px-6 border-b-2 font-medium text-sm ${
                   activeTab === 'improvement' 
                     ? 'border-purple-500 text-purple-600' 
@@ -854,14 +943,25 @@ const AcademicReport = () => {
                           const percentage = (record.marks / record.totalMarks) * 100;
                           let gradeBgColor;
                           let gradeTextColor;
+
+                          let grade = 'F';
+                          if (percentage >= 90) grade = 'A+';
+                          else if (percentage >= 80) grade = 'A';
+                          else if (percentage >= 70) grade = 'B+';
+                          else if (percentage >= 60) grade = 'B';
+                          else if (percentage >= 50) grade = 'C+';
+                          else if (percentage >= 40) grade = 'C';
+                          else if (percentage >= 33) grade = 'D';
+                      
+                       
                           
-                          if (record.grade === 'A+' || record.grade === 'A') {
+                          if (grade === 'A+' || grade === 'A') {
                             gradeBgColor = 'bg-green-100';
                             gradeTextColor = 'text-green-800';
-                          } else if (record.grade === 'B+' || record.grade === 'B') {
+                          } else if (grade === 'B+' || grade === 'B') {
                             gradeBgColor = 'bg-blue-100';
                             gradeTextColor = 'text-blue-800';
-                          } else if (record.grade === 'C+' || record.grade === 'C') {
+                          } else if (grade === 'C+' || grade === 'C') {
                             gradeBgColor = 'bg-yellow-100';
                             gradeTextColor = 'text-yellow-800';
                           } else {
@@ -878,8 +978,9 @@ const AcademicReport = () => {
                                 {record.marks}/{record.totalMarks} ({percentage.toFixed(1)}%)
                               </td>
                               <td className="py-3 px-4">
+                                {/* {console.log(record)} */}
                                 <span className={`px-2 py-1 text-xs font-medium rounded-full ${gradeBgColor} ${gradeTextColor}`}>
-                                  {record.grade || 'N/A'}
+                                  {getGrade(record) || 'N/A'}
                                 </span>
                               </td>
                             </tr>
@@ -955,7 +1056,7 @@ const AcademicReport = () => {
                   <h3 className="text-lg font-semibold text-gray-700 mb-4">General Study Tips</h3>
                   <div className="bg-white border border-purple-100 rounded-lg p-4 shadow-sm">
                     <ul className="space-y-2">
-                      {suggestions.generalSuggestions.map((tip, index) => (
+                      {generalSuggestion.map((tip, index) => (
                         <li key={`tip-${index}`} className="flex items-start">
                           <span className="text-purple-700 mr-2">•</span>
                           <span className="text-gray-700">{tip}</span>
@@ -966,11 +1067,11 @@ const AcademicReport = () => {
                 </div>
                 
                 {/* Subject-specific suggestions */}
-                {suggestions.subjectSpecificSuggestions.length > 0 && (
+                {subjectSpecificSuggestion.length > 0 && (
                   <div className="mb-8">
                     <h3 className="text-lg font-semibold text-gray-700 mb-4">Subject-Specific Improvement Plans</h3>
                     
-                    {suggestions.subjectSpecificSuggestions.map((subjectSuggestion, index) => (
+                    {subjectSpecificSuggestion.map((subjectSuggestion, index) => (
                       <div 
                         key={`subject-suggestion-${index}`} 
                         className="bg-white border border-purple-100 rounded-lg p-4 shadow-sm mb-4"
@@ -1023,7 +1124,7 @@ const AcademicReport = () => {
                         </thead>
                         <tbody className="divide-y divide-purple-100">
                           {['Monday', 'Wednesday', 'Friday', 'Sunday'].map((day, index) => {
-                            const weakSubjects = suggestions.subjectSpecificSuggestions.map(s => s.subject);
+                            const weakSubjects = subjectSpecificSuggestion.map(s => s.subject);
                             
                             return (
                               <tr key={`day-${index}`} className="hover:bg-gray-50">

@@ -323,7 +323,9 @@ export const fetchAllCourses = async () => {
   return res.data;
 };
 
-export const fetchAllStudents = async (studentId) => {
-  const res = await axios.get(`${API_URL}/students/all-students`);
+export const fetchAllStudents = async (semester, course) => {
+  const res = await axios.get(`${API_URL}/students/all-students?semester=${semester}&course=${course}`, {
+    withCredentials: true,
+  });
   return res.data.data;
-};
+}

@@ -13,72 +13,12 @@ import {
 } from 'recharts';
 import { useStudent } from '../context/userContext';
 import { analyseReport } from '../utils/analyseReport';
+import OverallAnalysis from './OverallAnalysis';
 
 const AcademicAnalysis = () => {
   const { student } = useStudent();
-  const student1  = {
-    "name": "John Doe",
-    "email": "johndoe@example.com",
-    "phone": "9876543210",
-    "age": 17,
-    "grade": "11th",
-    "profilePic": "https://example.com/profile.jpg",
-    "enrollment": "JD12345",
-    "type": "Full-time",
-    "academicRecords": [
-      { "subject": "Mathematics", "code": "MTH101", "marks": 65, "totalMarks": 100, "grade": "C" },
-      { "subject": "Science", "code": "SCI102", "marks": 85, "totalMarks": 100, "grade": "A" },
-      { "subject": "English", "code": "ENG103", "marks": 78, "totalMarks": 100, "grade": "B" },
-      { subject: "Mathematics", code: "MATH101", year: 2022, marks: 85, totalMarks: 100, grade: "A" },
-            { subject: "Physics", code: "PHYS101", year: 2022, marks: 78, totalMarks: 100, grade: "B+" },
-            { subject: "Computer Science", code: "CS101", year: 2022, marks: 92, totalMarks: 100, grade: "A+" },
-            { subject: "English", code: "ENG101", year: 2022, marks: 75, totalMarks: 100, grade: "B" },
-            { subject: "Mathematics", code: "MATH201", year: 2023, marks: 88, totalMarks: 100, grade: "A" },
-            { subject: "Physics", code: "PHYS201", year: 2023, marks: 82, totalMarks: 100, grade: "A-" },
-            { subject: "Computer Science", code: "CS201", year: 2023, marks: 95, totalMarks: 100, grade: "A+" },
-            { subject: "English", code: "ENG201", year: 2023, marks: 80, totalMarks: 100, grade: "B+" }
-    ],
-    "skills": [
-      { "skillName": "Public Speaking", "proficiency": "Intermediate" },
-      { "skillName": "Programming", "proficiency": "Beginner" },
-      { skillName: "Programming", proficiency: "Advanced" },
-            { skillName: "Data Analysis", proficiency: "Intermediate" },
-            { skillName: "Problem Solving", proficiency: "Advanced" },
-            { skillName: "Communication", proficiency: "Intermediate" }
-    ],
-    "extracurricularActivities": [
-      { 
-                activityName: "Student Council", 
-                type: "Leadership", 
-                position: "Secretary", 
-                achievements: "Organized successful fundraising campaign",
-                details: "Managed meeting minutes and communications for the council."
-              },
-              { 
-                activityName: "Drama Club", 
-                type: "Club", 
-                position: "Lead Actor", 
-                achievements: "Best Performance Award in annual play",
-                details: "Participated in two major productions per year."
-              }
-    ],
-    "courses": [
-      { "courseName": "Web Development", "institution": "Online Academy" },
-      { "courseName": "Physics Crash Course", "institution": "City Institute" }
-    ],
-    "attendance": [
-   
-      { date: "2023-01-10", status: "Present" },
-            { date: "2023-01-11", status: "Present" },
-            { date: "2023-01-12", status: "Late" },
-            { date: "2023-01-13", status: "Present" },
-            { date: "2023-01-16", status: "Excused" },
-            { date: "2023-01-17", status: "Excused" },
-            { date: "2023-01-18", status: "Present" },
-            { date: "2023-01-19", status: "Present" },
-            { date: "2023-01-20", status: "Present" }
-    ]   
-};
+  console.log(student)
+  
   const [academicData, setAcademicData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -100,50 +40,122 @@ const AcademicAnalysis = () => {
     setLoading(true);
     
     try {
-      // Get academic records
-      const academicRecords = student.academicRecords || [];
-      setAcademicData(academicRecords);
+      // Transform academic records to match expected format
+      const transformedAcademicRecords = student.academicRecords?.map(record => ({
+        subject: record.subjectId?.subject || 'Unknown Subject',
+        code: record.subjectId?.code || 'Unknown Code',
+        year: record.subjectId?.year || new Date().getFullYear(),
+        marks: record.marks,
+        totalMarks: record.totalMarks,
+        grade: record.grade || 'N/A',
+        semester: record.subjectId?.semester || '1st'
+      })) || [];
       
-      // Get skills
+      setAcademicData(transformedAcademicRecords);
+      
+      // Transform skills data with defaults if empty
       const skills = student.skills || [];
       setSkillsData(skills);
       
-      // Get attendance
-      const attendance = student.attendance || [];
+      // Transform attendance data
+      const attendance = student.attendance?.map(record => ({
+        date: new Date(record.date),
+        status: record.status,
+        subject: record.subject,
+        timeIn: record.timeIn,
+        timeOut: record.timeOut,
+        note: record.note
+      })) || [];
       setAttendanceData(attendance);
       
-      // Get extracurricular activities
+      // Get extracurricular activities (empty array as default)
       const extracurricular = student.extracurricularActivities || [];
       setExtracurricularData(extracurricular);
       
       // Process data for visualizations
-      processAcademicData(academicRecords);
+      processAcademicData(transformedAcademicRecords);
       generateCareerRecommendations(
-        academicRecords,
+        transformedAcademicRecords,
         skills,
         extracurricular
       );
       
-      // Generate personalized feedback using the analyseReport utility
-      let data = {
-        "student":student
-    }
-       analyseReport(data)
-       .then((report)=>{
-          console.log(report)
-          // const feedbackData = '{"Feedback": {...}}';
-          // const feedback = JSON.parse(feedbackData);
-          // setFeedback(report);
-          setFeedback(JSON.parse(report));
+      // Generate mock feedback if student exists since we might not be able to call the API
+      if (student) {
+        // Generate mock feedback if API call fails
+        const mockFeedback = generateMockFeedback(transformedAcademicRecords, attendance, skills);
+        
+        try {
+          // Try the API call first
+          let data = {
+            "student": student
+          };
+          analyseReport(data)
+            .then((report) => {
+              console.log(report);
+              setFeedback(typeof report === 'string' ? JSON.parse(report) : report);
+              setLoading(false);
+            })
+            .catch((err) => {
+              console.error("Error calling analyseReport:", err);
+              setFeedback(mockFeedback);
+              setLoading(false);
+            });
+        } catch (err) {
+          console.error("Error in feedback generation:", err);
+          setFeedback(mockFeedback);
           setLoading(false);
-       })
+        }
+      }
+      
       setLoading(false);
     } catch (err) {
-      setError('Failed to process student data');
+      setError('Failed to process student data: ' + err.message);
       setLoading(false);
       console.error(err);
     }
-  }, []);
+  }, [student]);
+  
+  // Generate mock feedback for testing
+  const generateMockFeedback = (academicData, attendanceData, skills) => {
+    // Find weak subjects (those with marks below 70%)
+    const weakSubjects = academicData
+      .filter(record => (record.marks / record.totalMarks) * 100 < 70)
+      .map(record => record.subject);
+    
+    // Calculate attendance rate
+    const attendanceRate = attendanceData.filter(record => 
+      record.status === 'Present').length / (attendanceData.length || 1) * 100;
+    
+    return {
+      "Identify Weak Subjects": weakSubjects.length > 0 ? weakSubjects : ["No weak subjects identified"],
+      "Suggest Study Techniques": [
+        "Use spaced repetition for better recall",
+        "Try the Pomodoro technique for focused study sessions",
+        "Create mind maps to connect concepts"
+      ],
+      "Time Management Tips": [
+        "Create a weekly study schedule",
+        "Set specific goals for each study session",
+        attendanceRate < 90 ? "Improve class attendance" : "Maintain your excellent attendance"
+      ],
+      "Motivational Advice": [
+        "Focus on progress, not perfection",
+        "Break large tasks into smaller, manageable chunks",
+        "Celebrate small wins and achievements"
+      ],
+      "Skill & Extracurricular Improvement": [
+        "Consider joining coding competitions",
+        "Develop soft skills through group projects",
+        "Explore internship opportunities"
+      ],
+      "Consistency & Practice": [
+        "Review class materials weekly",
+        "Practice solving problems regularly",
+        "Form or join study groups for difficult subjects"
+      ]
+    };
+  };
   
   // Process academic data for visualization
   const processAcademicData = (data) => {
@@ -180,77 +192,97 @@ const AcademicAnalysis = () => {
   
   // Generate career recommendations based on academic performance, skills, and extracurricular activities
   const generateCareerRecommendations = (academics, skills, extracurricular) => {
+    // Default recommendations for MCA students
+    let recommendations = [
+      "Software Developer",
+      "System Analyst",
+      "Data Scientist",
+      "Web Developer",
+      "Database Administrator"
+    ];
+    
     // This is a simplified recommendation engine - in a real system, this would be more sophisticated
-    const recommendations = [];
-    
-    // Get top performing subjects
-    const subjectPercentages = {};
-    academics.forEach(record => {
-      const percentage = (record.marks / record.totalMarks) * 100;
-      if (!subjectPercentages[record.subject]) {
-        subjectPercentages[record.subject] = [];
-      }
-      subjectPercentages[record.subject].push(percentage);
-    });
-    
-    const topSubjects = Object.entries(subjectPercentages)
-      .map(([subject, percentages]) => ({
-        subject,
-        average: percentages.reduce((sum, p) => sum + p, 0) / percentages.length
-      }))
-      .sort((a, b) => b.average - a.average)
-      .slice(0, 3);
-    
-    // Get advanced skills
-    const advancedSkills = skills.filter(skill => skill.proficiency === "Advanced")
-      .map(skill => skill.skillName);
-    
-    // Get significant extracurricular activities
-    const significantActivities = extracurricular
-      .filter(activity => activity.achievements)
-      .map(activity => activity.activityName);
-    
-    // Simple career mapping (in a real app, this would be much more sophisticated)
-    const careerMap = {
-      "Mathematics": ["Data Scientist", "Statistician", "Financial Analyst"],
-      "Physics": ["Engineer", "Research Scientist", "Technical Consultant"],
-      "Computer Science": ["Software Developer", "System Analyst", "Cybersecurity Specialist"],
-      "English": ["Content Writer", "Editor", "Communications Specialist"],
-      "History": ["Historian", "Archivist", "Political Analyst"],
-      "Economics": ["Economist", "Business Analyst", "Market Research Analyst"],
-      "Biology": ["Biologist", "Healthcare Professional", "Environmental Scientist"],
-      "Chemistry": ["Chemist", "Pharmacologist", "Quality Control Specialist"]
-    };
-    
-    // Generate recommendations based on top subjects
-    topSubjects.forEach(subject => {
-      if (careerMap[subject.subject]) {
-        careerMap[subject.subject].forEach(career => {
-          if (!recommendations.includes(career)) {
-            recommendations.push(career);
-          }
-        });
-      }
-    });
-    
-    // Add recommendations based on skills and extracurricular activities
-    if (advancedSkills.includes("Programming") || advancedSkills.includes("Coding")) {
-      ["Software Engineer", "Web Developer", "Mobile App Developer"].forEach(career => {
-        if (!recommendations.includes(career)) {
-          recommendations.push(career);
+    if (academics.length > 0) {
+      // Get top performing subjects
+      const subjectPercentages = {};
+      academics.forEach(record => {
+        const percentage = (record.marks / record.totalMarks) * 100;
+        if (!subjectPercentages[record.subject]) {
+          subjectPercentages[record.subject] = [];
+        }
+        subjectPercentages[record.subject].push(percentage);
+      });
+      
+      const topSubjects = Object.entries(subjectPercentages)
+        .map(([subject, percentages]) => ({
+          subject,
+          average: percentages.reduce((sum, p) => sum + p, 0) / percentages.length
+        }))
+        .sort((a, b) => b.average - a.average)
+        .slice(0, 3);
+      
+      // Simple career mapping for MCA subjects
+      const careerMap = {
+        "Computer Fundamentals": ["System Analyst", "Technical Consultant", "IT Support Specialist"],
+        "Programming Languages": ["Software Developer", "Mobile App Developer", "Game Developer"],
+        "Database Management": ["Database Administrator", "Data Engineer", "Business Intelligence Analyst"],
+        "Data Structures": ["Algorithm Engineer", "Software Developer", "Backend Developer"],
+        "Web Development": ["Web Developer", "Frontend Developer", "Full Stack Developer"],
+        "Networking": ["Network Administrator", "Security Analyst", "Cloud Engineer"],
+        "Operating Systems": ["System Administrator", "DevOps Engineer", "Technical Support Specialist"],
+        "Software Engineering": ["Software Architect", "Project Manager", "Quality Assurance Engineer"],
+        "Machine Learning": ["Data Scientist", "AI Engineer", "Machine Learning Engineer"],
+        "Cloud Computing": ["Cloud Architect", "Cloud Developer", "Solutions Architect"]
+      };
+      
+      // Update recommendations based on top subjects
+      const subjectBasedRecommendations = [];
+      topSubjects.forEach(subject => {
+        const subjectName = subject.subject;
+        // Find the closest match in our careerMap
+        const matchingKey = Object.keys(careerMap).find(key => 
+          subjectName.toLowerCase().includes(key.toLowerCase()) || 
+          key.toLowerCase().includes(subjectName.toLowerCase())
+        );
+        
+        if (matchingKey && careerMap[matchingKey]) {
+          careerMap[matchingKey].forEach(career => {
+            if (!subjectBasedRecommendations.includes(career)) {
+              subjectBasedRecommendations.push(career);
+            }
+          });
         }
       });
+      
+      if (subjectBasedRecommendations.length > 0) {
+        recommendations = subjectBasedRecommendations;
+      }
     }
     
-    if (significantActivities.includes("Debate") || significantActivities.includes("Public Speaking")) {
-      ["Lawyer", "Public Relations Specialist", "Corporate Trainer"].forEach(career => {
-        if (!recommendations.includes(career)) {
-          recommendations.push(career);
-        }
-      });
+    // Get skills-based recommendations if skills exist
+    if (skills.length > 0) {
+      const advancedSkills = skills.filter(skill => 
+        skill.proficiency === "Advanced").map(skill => skill.skillName);
+        
+      if (advancedSkills.includes("Programming") || advancedSkills.includes("Coding")) {
+        recommendations = ["Software Engineer", "Web Developer", "Mobile App Developer", ...recommendations];
+      }
     }
     
-    setCareerRecommendations(recommendations.slice(0, 5)); // Limit to top 5 recommendations
+    // Get extracurricular-based recommendations if they exist
+    if (extracurricular.length > 0) {
+      const significantActivities = extracurricular
+        .filter(activity => activity.achievements)
+        .map(activity => activity.activityName);
+      
+      if (significantActivities.includes("Debate") || significantActivities.includes("Public Speaking")) {
+        recommendations = ["Technical Trainer", "IT Consultant", "Project Manager", ...recommendations];
+      }
+    }
+    
+    // Remove duplicates and limit to top 5
+    recommendations = [...new Set(recommendations)].slice(0, 5);
+    setCareerRecommendations(recommendations);
   };
   
   // Calculate attendance statistics
@@ -258,12 +290,13 @@ const AcademicAnalysis = () => {
     if (!attendanceData.length) return { present: 0, absent: 0, late: 0, excused: 0, percentage: 0 };
     
     const stats = attendanceData.reduce((acc, record) => {
-      acc[record.status?.toLowerCase()]++;
+      const status = record.status?.toLowerCase() || 'unknown';
+      acc[status] = (acc[status] || 0) + 1;
       return acc;
     }, { present: 0, absent: 0, late: 0, excused: 0 });
     
     const totalDays = attendanceData.length;
-    const percentage = ((stats.present + stats.late) / totalDays * 100).toFixed(2);
+    const percentage = ((stats.present + (stats.late || 0)) / totalDays * 100).toFixed(2);
     
     return { ...stats, percentage, totalDays };
   };
@@ -323,8 +356,8 @@ const AcademicAnalysis = () => {
   }
   
   return (
-    <div className="p-4 md:p-8">
-      <h1 className="text-3xl font-bold mb-6">Academic Analysis</h1>
+    <div className="p-4 md:p-8 bg-amber-300">
+      <h1 className="text-3xl font-bold pt-20 mb-6">Academic Analysis</h1>
       
       {error && (
         <div className="bg-red-100 text-red-700 p-4 rounded-md mb-6">
@@ -333,9 +366,9 @@ const AcademicAnalysis = () => {
       )}
       
       {student && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 ">
           {/* Student Profile Card */}
-          <div className="bg-white rounded-lg shadow-md p-6">
+          {/* <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold mb-4">Student Profile</h2>
             <div className="flex items-center mb-4">
               <div className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 mr-4">
@@ -356,8 +389,12 @@ const AcademicAnalysis = () => {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-gray-600">Grade:</p>
-                <p className="font-medium">{student.grade}</p>
+                <p className="text-gray-600">Course:</p>
+                <p className="font-medium">{student.course?.courseName || 'MCA'}</p>
+              </div>
+              <div>
+                <p className="text-gray-600">Semester:</p>
+                <p className="font-medium">{student.semester}</p>
               </div>
               <div>
                 <p className="text-gray-600">Age:</p>
@@ -372,7 +409,7 @@ const AcademicAnalysis = () => {
                 <p className="font-medium">{student.phone || "N/A"}</p>
               </div>
             </div>
-          </div>
+          </div> */}
           
           {/* Overall Performance Card */}
           <div className="bg-white rounded-lg shadow-md p-6">
@@ -383,8 +420,10 @@ const AcademicAnalysis = () => {
                   <p className="text-gray-600">Average Grade:</p>
                   <p className="text-3xl font-bold">
                     {(academicData.reduce((sum, record) => {
-                      const gradeMap = { 'A+': 10, 'A': 9, 'A-': 8, 'B+': 7, 'B': 6, 'B-': 5, 'C+': 4, 'C': 3, 'D': 2, 'F': 0 };
-                      return sum + (gradeMap[record.grade] || 0);
+                      // For MCA course, we're using percentage directly as grading might be different
+                      const percentage = (record.marks / record.totalMarks) * 100;
+                      // Convert percentage to a 10-point scale
+                      return sum + (percentage / 10);
                     }, 0) / academicData.length).toFixed(2)}
                   </p>
                 </div>
@@ -428,11 +467,11 @@ const AcademicAnalysis = () => {
                   </div>
                   <div>
                     <p className="text-gray-600">Late:</p>
-                    <p className="font-medium">{attendanceStats.late} days</p>
+                    <p className="font-medium">{attendanceStats.late || 0} days</p>
                   </div>
                   <div>
                     <p className="text-gray-600">Excused:</p>
-                    <p className="font-medium">{attendanceStats.excused} days</p>
+                    <p className="font-medium">{attendanceStats.excused || 0} days</p>
                   </div>
                 </div>
               </>
@@ -443,8 +482,6 @@ const AcademicAnalysis = () => {
         </div>
       )}
       
-      {console.log(feedback && feedback["Identify Weak Subjects"])}
-
       {student && feedback && (
   <div className="bg-white rounded-lg shadow-md p-6 mb-8">
     <h2 className="text-xl font-semibold mb-4">Personalized Feedback & Suggestions</h2>
@@ -453,7 +490,7 @@ const AcademicAnalysis = () => {
       <div className="bg-blue-50 p-4 rounded-md">
         <h3 className="font-medium text-blue-800 mb-2">Identify Weak Subjects</h3>
         <ul className="list-disc pl-5 text-blue-700 space-y-1">
-          {feedback["Identify Weak Subjects"].length > 0 ? (
+          {feedback["Identify Weak Subjects"] && feedback["Identify Weak Subjects"].length > 0 ? (
             feedback["Identify Weak Subjects"].map((subject, index) => (
               <li key={index}>{subject}</li>
             ))
@@ -467,7 +504,7 @@ const AcademicAnalysis = () => {
       <div className="bg-green-50 p-4 rounded-md">
         <h3 className="font-medium text-green-800 mb-2">Study Techniques</h3>
         <ul className="list-disc pl-5 text-green-700 space-y-1">
-          {feedback["Suggest Study Techniques"].length > 0 ? (
+          {feedback["Suggest Study Techniques"] && feedback["Suggest Study Techniques"].length > 0 ? (
             feedback["Suggest Study Techniques"].map((technique, index) => (
               <li key={index}>{technique}</li>
             ))
@@ -481,7 +518,7 @@ const AcademicAnalysis = () => {
       <div className="bg-purple-50 p-4 rounded-md">
         <h3 className="font-medium text-purple-800 mb-2">Time Management Tips</h3>
         <ul className="list-disc pl-5 text-purple-700 space-y-1">
-          {feedback["Time Management Tips"].length > 0 ? (
+          {feedback["Time Management Tips"] && feedback["Time Management Tips"].length > 0 ? (
             feedback["Time Management Tips"].map((tip, index) => (
               <li key={index}>{tip}</li>
             ))
@@ -495,7 +532,7 @@ const AcademicAnalysis = () => {
       <div className="bg-yellow-50 p-4 rounded-md">
         <h3 className="font-medium text-yellow-800 mb-2">Motivational Advice</h3>
         <ul className="list-disc pl-5 text-yellow-700 space-y-1">
-          {feedback["Motivational Advice"].length > 0 ? (
+          {feedback["Motivational Advice"] && feedback["Motivational Advice"].length > 0 ? (
             feedback["Motivational Advice"].map((advice, index) => (
               <li key={index}>{advice}</li>
             ))
@@ -509,7 +546,7 @@ const AcademicAnalysis = () => {
       <div className="bg-red-50 p-4 rounded-md">
         <h3 className="font-medium text-red-800 mb-2">Skill & Extracurricular Improvement</h3>
         <ul className="list-disc pl-5 text-red-700 space-y-1">
-          {feedback["Skill & Extracurricular Improvement"].length > 0 ? (
+          {feedback["Skill & Extracurricular Improvement"] && feedback["Skill & Extracurricular Improvement"].length > 0 ? (
             feedback["Skill & Extracurricular Improvement"].map((improvement, index) => (
               <li key={index}>{improvement}</li>
             ))
@@ -523,7 +560,7 @@ const AcademicAnalysis = () => {
       <div className="bg-indigo-50 p-4 rounded-md">
         <h3 className="font-medium text-indigo-800 mb-2">Consistency & Practice</h3>
         <ul className="list-disc pl-5 text-indigo-700 space-y-1">
-          {feedback["Consistency & Practice"].length > 0 ? (
+          {feedback["Consistency & Practice"] && feedback["Consistency & Practice"].length > 0 ? (
             feedback["Consistency & Practice"].map((practice, index) => (
               <li key={index}>{practice}</li>
             ))
@@ -626,7 +663,17 @@ const AcademicAnalysis = () => {
                   </table>
                 </div>
               ) : (
-                <p>No skills data available.</p>
+                <div className="bg-yellow-50 p-4 rounded">
+                  <p className="text-yellow-700">No skills data available. Add your skills to get personalized recommendations.</p>
+                  <p className="mt-2 text-sm">Consider adding skills like:</p>
+                  <ul className="list-disc ml-5 mt-1 text-sm">
+                    <li>Programming Languages (Java, Python, etc.)</li>
+                    <li>Web Development (HTML, CSS, JavaScript)</li>
+                    <li>Database Management (SQL, MongoDB)</li>
+                    <li>Problem Solving</li>
+                    <li>Data Structures and Algorithms</li>
+                  </ul>
+                </div>
               )}
             </div>
           </div>
@@ -733,6 +780,8 @@ const AcademicAnalysis = () => {
               </table>
             </div>
           </div>
+
+          <OverallAnalysis/>
         </>
       )}
       
@@ -759,6 +808,7 @@ const AcademicAnalysis = () => {
 };
 
 export default AcademicAnalysis;
+
 
 // import React, { useState, useEffect } from 'react';
 // import { 

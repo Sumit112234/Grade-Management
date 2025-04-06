@@ -12,8 +12,16 @@ import AcademicAnalysis from './pages/Analysis'
 import AddCourses from './adminPages/AddCourse'
 import Protected from './pages/Protected'
 import AcademicReport from './pages/Academics'
+import AssignMarksPage from './adminPages/AddMarks'
+import { ToastContainer } from 'react-toastify'
 
-// I am creating "Student Carrer Counselling using academic performance data analysis" project using MERN with tailwindcss and framer-motion with a purple and white theme.
+
+
+
+// Academic mai se dekh kr 2nd option navbar ko dekhna h 
+// Attendence badani h rahul ki
+
+// I am creating "Student Carrer Counselling using academic performance data analysis" project using MERN with tailwindcss and framer-motion with a blue and white theme.
 
 // Create Admin page by which admin can create courses and other things provided below.
 
@@ -31,18 +39,20 @@ function App() {
       <Routes>
         <Route path='/login' element={<Login/>}></Route>
         <Route path='/register' element={<Signup/>}></Route>
-        <Route path='/' element={<Protected><Home/></Protected>}></Route>
-        <Route path='/attendance' element={<AttendancePage/>}></Route>
-        <Route path='/profile' element={<StudentProfile/>}></Route>
-        <Route path='/analysis' element={<AcademicAnalysis/>}></Route>
-        <Route path='/academic' element={<AcademicReport/>}></Route>
+        <Route path='/' element={<Home/>}></Route>
+        <Route path='/attendance' element={<Protected><AttendancePage/></Protected>}></Route>
+        <Route path='/profile' element={<Protected><StudentProfile/></Protected>}></Route>
+        <Route path='/analysis' element={<Protected><AcademicAnalysis/></Protected>}></Route>
+        <Route path='/academic' element={<Protected><AcademicReport/></Protected>}></Route>
 
         {/* admin route */}
 
         <Route path='/A-attendance' element={<CounselorAttendancePage/>}></Route>
         <Route path='/A-addCourses' element={<AddCourses/>}></Route>
+        <Route path='/A-addMarks' element={<AssignMarksPage/>}></Route>
 
       </Routes>
+      <ToastContainer position='top-center'/>
     </BrowserRouter>
     
    </>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStudent } from '../context/userContext';
+import { toast } from 'react-toastify';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -20,7 +21,7 @@ const Login = () => {
      {
       setTimeout(() => {
         navigate('/');
-      }, 300);
+      }, 1500);
      }
   
   },[student])
@@ -36,10 +37,18 @@ const Login = () => {
     setLoading(true);
     
     login(formData)
-    .then(()=>{
+    .then((status)=>{
+      if(status)
+        toast.success('Login successful!');
+      else
+        toast.error('Invalid credentials!');
+
       setTimeout(() => {
-        navigate('/');
-      }, 1500);
+        if(status)
+        {
+          navigate('/');
+        }
+      }, 2000);
       setLoading(false);
       
     })
