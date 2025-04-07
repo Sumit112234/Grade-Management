@@ -246,17 +246,17 @@ const HomePage = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.4 }}
                   >
-                    <Link
+                    {/* <Link
                       to="/dashboard"
                       className="inline-flex items-center rounded-md border border-transparent bg-white bg-opacity-20 px-6 py-3 text-base font-medium text-white hover:bg-opacity-30 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-indigo-600 transition-all duration-300"
                     >
                       <span className="mr-2">📊</span> My Dashboard
-                    </Link>
+                    </Link> */}
                     <Link
-                      to="/courses"
+                      to="/academic"
                       className="inline-flex items-center rounded-md border border-transparent bg-white px-6 py-3 text-base font-medium text-indigo-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-300"
                     >
-                      <span className="mr-2">🎓</span> View Courses
+                      <span className="mr-2 text-xl ">🎓</span> View Analyses <span className=' ml-3 font-bold text-xl'>-&gt;</span>
                     </Link>
                   </motion.div>
                 </div>

@@ -18,11 +18,24 @@ export const addAcademicRecord = async (req, res) => {
 export const analyzeStudentPerformance = async (req, res) => {
 
   // console.log(req.body);
-  const student = req.body.student; // Student data is already populated
+  const {data , prompt} = req.body; // Student data is already populated
 
-  if (!student) {
-    return res.status(400).json({ message: "Student data is required" });
-  }
+  const query = `${prompt} ${JSON.stringify(data)}`;
+  
+  const aiResponse = await axios.get(
+    `https://raghav-aiserver.vercel.app/chat?query=${encodeURIComponent(query)}`
+  );
+  // const aiResponse = await axios.get(
+  //   `https://rapidai.vercel.app/chat?prompt=${encodeURIComponent(query)}`
+  // );
+  
+  
+  const feedback = aiResponse.data.response || "No feedback available.";
+  // const feedback = aiResponse.data.reply || "No feedback available.";
+  console.log(aiResponse)
+
+  res.status(200).json({message : "Feedback generated successfully", feedback});
+  return ;
 
   // try {
     // Extract student details
@@ -79,21 +92,7 @@ export const analyzeStudentPerformance = async (req, res) => {
     
     **Note:** **Only** return improvement suggestions in bullet points. **Do not include any student information.**`;
     
-    // Call AI API for feedback
-    // const aiResponse = await axios.get(
-    //   `https://rapidai.vercel.app/chat?instruction=${encodeURIComponent(instruction)}&prompt=${encodeURIComponent(performanceData)}`
-    // );
-    
-    // // Extract AI-generated feedback
-    // const feedback = aiResponse.data.reply || "No feedback available.";
-    
-    const aiResponse = await axios.get(
-      `https://raghav-aiserver.vercel.app/chat?query=${encodeURIComponent(instruction + performanceData)}`
-    );
-    
-    // Extract AI-generated feedback
-    const feedback = aiResponse.data.response || "No feedback available.";
-    
+   
     let cleardata = await axios.get(
       `https://rapidai.vercel.app/clear`
     );

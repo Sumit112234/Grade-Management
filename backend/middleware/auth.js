@@ -30,7 +30,7 @@ const auth = async (req, res, next) => {
         }
         // let user = await User.findOne({ _id : decode.userId});
         const user = await Student.findById(decode.userId)
-        .populate("academicRecords")
+        .populate("academicRecords.subjectId")
         .populate("skills")
         .populate("extracurricularActivities")
         .populate("course")

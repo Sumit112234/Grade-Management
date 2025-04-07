@@ -2,6 +2,7 @@ import Student from "../models/Student.js";
 import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import uploadImageCloudinary from "../utils/uploadImageCloudinary.js";
+import mongoose from "mongoose";
 
 
 const getEnroll = ()=>{
@@ -292,6 +293,34 @@ export async function updateStudentDetails(req, res) {
         });
     }
 }
+export async function updateStudent(req, res) {
+    try {
+
+      const updatedResult = await Student.updateMany(
+        {},
+        {
+          $set: {
+            "academicRecords.$[].marks": 0,
+            "academicRecords.$[].totalMarks": 0
+          }
+        }
+      );
+
+
+        res.status(200).json({
+            message: "User updated successfully.",
+            status: true,
+            error: false,
+            data: updatedResult,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message || "Internal server error.",
+            status: false,
+            error: true,
+        });
+    }
+}
 
 export const getStudent = async (req, res) => {
 	try {
@@ -308,7 +337,8 @@ export const getStudentByFilter = async (req, res) => {
     let user = await Student.findOne({enrollment : enroll})
     .populate('course')
     .populate('extracurricularActivities')
-
+    .populate("academicRecords.subjectId")
+    
     res.status(200).json({
       user,
     })
@@ -341,15 +371,75 @@ export const assignCourse = async (req, res) => {
 	}
 };
 
+export const assignMarks = async (req, res) => {
+	try {
+   
+    const data = req.body;
+    let errors = [];
+
+    const queues = data.map(async (item) => {
+      const { studentId, subjectId, marks, totalMarks } = item;
+
+      try {
+        const student = await Student.findOneAndUpdate(
+          { _id: studentId, "academicRecords.subjectId": subjectId },
+          {
+            $inc: {
+              "academicRecords.$.marks": marks,
+              "academicRecords.$.totalMarks": totalMarks,
+            },
+          },
+          { new: true }
+        );
+
+        return student;
+
+
+      } catch (error) {
+        errors.push(error.message || error);
+      }
+    })
+
+    const results = await Promise.all(queues);
+
+    if(errors.length > 0) {
+      return res.status(500).json({ message: "Some error occured", errors });
+    }
+    res.status(200).json({
+      message: "Marks assigned successfully",
+      error: false,
+    })
+
+	} catch (error) {
+		res.status(500).json({ message: "Server error", error: error.message, e : errors });
+	}
+};
+
+
 export const getStudents = async (req, res) => {
   try {
- 
-    const student = await Student.find()
-    .populate('course')
-    .populate('academicRecords.subjectId');
-     
-    res.status(200).json({data : student});
+    const { semester, course } = req.query;
+
+    const filter = {};
+
+    // Only add filters if valid
+    if (semester && semester !== "undefined") {
+      filter.semester = semester;
+    }
+
+    if (course && course !== "undefined" && mongoose.Types.ObjectId.isValid(course)) {
+      filter.course = new mongoose.Types.ObjectId(course);
+    }
+
+    console.log("Searching students with filter:", filter);
+
+    const students = await Student.find(filter)
+      .populate("course")
+      .populate("academicRecords.subjectId");
+
+    res.status(200).json({ data: students });
   } catch (error) {
+    console.error("Error fetching students:", error.message);
     res.status(500).json({ message: "Server Error" });
   }
 };
@@ -364,3 +454,74 @@ export const getStudents = async (req, res) => {
 //     res.status(400).json({ message: error.message });
 //   }
 // };
+// router.post('/marks', isAuth, isTeacher, async (req, res) => {
+//   try {
+//     const { studentId, subjectId, marks, totalMarks } = req.body;
+    
+//     if (!studentId || !subjectId || marks === undefined || totalMarks === undefined) {
+//       return res.status(400).json({ message: 'Missing required fields' });
+//     }
+    
+//     // Validate marks
+//     if (marks < 0 || totalMarks <= 0 || marks > totalMarks) {
+//       return res.status(400).json({ message: 'Invalid marks or total marks' });
+//     }
+    
+//     // Check if student exists
+//     const student = await Student.findById(studentId);
+//     if (!student) {
+//       return res.status(404).json({ message: 'Student not found' });
+//     }
+    
+//     // Check if subject exists
+//     const subject = await Academic.findById(subjectId);
+//     if (!subject) {
+//       return res.status(404).json({ message: 'Subject not found' });
+//     }
+    
+//     // Calculate grade based on percentage
+//     const percentage = (marks / totalMarks) * 100;
+//     let grade = '';
+    
+//     if (percentage >= 90) grade = 'A+';
+//     else if (percentage >= 80) grade = 'A';
+//     else if (percentage >= 70) grade = 'B+';
+//     else if (percentage >= 60) grade = 'B';
+//     else if (percentage >= 50) grade = 'C';
+//     else if (percentage >= 40) grade = 'D';
+//     else grade = 'F';
+    
+//     // Check if academic record for this subject already exists
+//     const existingRecordIndex = student.academicRecords.findIndex(
+//       record => record.subjectId.toString() === subjectId
+//     );
+    
+//     if (existingRecordIndex !== -1) {
+//       // Update existing record
+//       student.academicRecords[existingRecordIndex].marks += marks;
+//       student.academicRecords[existingRecordIndex].totalMarks += totalMarks;
+//       student.academicRecords[existingRecordIndex].grade = grade;
+//     } else {
+//       // Create new academic record
+//       student.academicRecords.push({
+//         marks,
+//         totalMarks,
+//         subjectId,
+//         grade
+//       });
+//     }
+    
+//     await student.save();
+    
+//     return res.status(200).json({ 
+//       message: 'Marks assigned successfully',
+//       academicRecord: existingRecordIndex !== -1 ? 
+//         student.academicRecords[existingRecordIndex] : 
+//         student.academicRecords[student.academicRecords.length - 1]
+//     });
+    
+//   } catch (error) {
+//     console.error('Error assigning marks:', error);
+//     return res.status(500).json({ message: 'Server error' });
+//   }
+// });

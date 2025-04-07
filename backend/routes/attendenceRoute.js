@@ -6,6 +6,6 @@ import { addAttendance, getAttendanceByStudent } from "../UtilitiFunctions/atten
 const router = express.Router();
 
 router.post("/", addAttendance);
-router.get("/:studentId", getAttendanceByStudent);
+router.get("/:studentEnroll", getAttendanceByStudent);
 
 export default router;

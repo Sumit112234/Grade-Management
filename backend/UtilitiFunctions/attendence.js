@@ -45,10 +45,12 @@ export const addAttendance = async (req, res) => {
 
 
 export const getAttendanceByStudent = async (req, res) => {
-  const { studentId } = req.params;
+  const { studentEnroll } = req.params;
 
   try {
-    const attendance = await Attendance.find({ studentId });
+    const attendance = await Attendance.find({ studentEnroll  })
+    .populate('subject');
+
     res.json(attendance);
   } catch (error) {
     res.status(500).json({ message: "Server Error" });

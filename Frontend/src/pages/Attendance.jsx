@@ -1,15 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useStudent } from '../context/userContext';
-
+import { fetchAttendance } from '../utils/api';
 
 const AttendancePage = () => {
-  // States for the attendance data and filters
-  
+  const { student } = useStudent();
+  const [currentMonth, setCurrentMonth] = useState('All Months');
+  const [selectedSubject, setSelectedSubject] = useState('All Subjects');
+  const [attendanceData, setAttendanceData] = useState([]);
+  const [subjects, setSubjects] = useState(['All Subjects']);
 
-  const transformAttendanceData = (attendanceList, courses) => {
+  const transformAttendanceData = (attendanceList, subjects) => {
+
+    console.log(attendanceList, subjects)
+
+    
     const calculateDuration = (timeIn, timeOut) => {
-      if (timeIn === "--:--" || !timeIn || !timeOut ||  timeOut === "--:--") return "1h";
+      if (timeIn === "--:--" || !timeIn || !timeOut || timeOut === "--:--") return "1h";
   
       const parseTime = (time) => {
         const [hours, minutes] = time.split(/[:\s]/);
@@ -29,79 +36,84 @@ const AttendancePage = () => {
     };
   
     return attendanceList.map((record, index) => {
-      const course = courses.find(c => c.id === record.courseId.id);
+      const subject = subjects.find(s => s._id === record.subject?._id);
+      // console.log(record)
+      
+      // Extract month and year from the date for filtering
+      const recordDate = new Date(record.date);
+      const recordMonth = recordDate.toLocaleDateString("en-US", {
+        month: "long",
+        year: "numeric"
+      });
       
       return {
         id: index + 1,
-        date: new Date(record.date).toLocaleDateString("en-US", {
+        date: recordDate.toLocaleDateString("en-US", {
           month: "long",
           day: "numeric",
           year: "numeric"
         }),
-        course: course ? `${course.code} - ${course.courseName}` : "Unknown Course",
+        monthYear: recordMonth,
+        subject: subject ? `${subject.subject} - ${subject.code}` : "Unknown Subject",
         status: record.status,
         percentage: record.status === "Present" ? 100 : record.status === "Late" ? 75 : 0,
         timeIn: record.timeIn,
         timeOut: record.timeOut,
-        duration: calculateDuration(record.timeIn, record.timeOut)
+        duration: calculateDuration(record.timeIn, record.timeOut),
+        note: record.note
       };
     });
   };
 
-
-  const {student} = useStudent()
-  console.log(student , " from attendance");
-  const [currentMonth, setCurrentMonth] = useState('March 2025');
-  const [selectedCourse, setSelectedCourse] = useState('All Courses');
-  
-  const [attendanceData, setAttendanceData] = useState( []
-);
-
+  useEffect(() => {
+    if (student) {
+      // Extract subject data from attendance records
+      const setSubjectsAndAttendance = async () => {
+        
+      let attendanceData = await fetchAttendance(student.enrollment);
+      if (!attendanceData) return;
 
 
-
-  // Filter the attendance data based on the selected course
-  const filteredAttendance = selectedCourse === 'All Courses' 
-    ? attendanceData
-    : attendanceData.filter(record => record.course === selectedCourse);
-
-
-  const [courses,setCourses] = useState([]);
-  useEffect(()=>{
-    // courses se nahi aayega subject se aayega
-    if(student)
-    {
-      console.log(student)
-
-      let courseData = student.attendance.map((data)=>{
+      let subjectsData = attendanceData.map((data) => {
         return {
-          ...data.courseId
+          ...data.subject
         }
-      })
-      console.log({courseData});
-      let ATData = transformAttendanceData(student.attendance,courseData)
-      setAttendanceData(ATData);
-      console.log(ATData)
-      setCourses(['All Courses', ...new Set(ATData.map(record => record.course
-      ))])
-      console.log(['All Courses', ...new Set(ATData.map(record => record.course
-      ))])
-    }
-  },[])
-  // Get unique courses from the attendance data
+      });
 
-  // Calculate attendance statistics
+      // Transform attendance data with subjects
+      let ATData = transformAttendanceData(attendanceData, subjectsData);
+      setAttendanceData(ATData);
+      console.log("ATData" , ATData)
+
+      // Get unique subjects from the attendance data
+      setSubjects(['All Subjects', ...new Set(ATData.map(record => record.subject))]);
+      }
+
+      setSubjectsAndAttendance();
+    }
+  }, [student]);
+
+  // Filter the attendance data based on the selected subject and month
+  const filteredAttendance = attendanceData.filter(record => {
+
+    // console.log("record", record)
+    const subjectMatch = selectedSubject === 'All Subjects' || record.subject === selectedSubject;
+    const monthMatch = currentMonth === 'All Months' ? true : record.monthYear === currentMonth;
+    return subjectMatch && monthMatch;
+  });
+
+  // Calculate attendance statistics based on filtered data
   const calculateStats = () => {
-    const total = filteredAttendance.length;
+    const total = filteredAttendance.length || 1; // Avoid division by zero
     const present = filteredAttendance.filter(record => record.status === 'Present').length;
     const late = filteredAttendance.filter(record => record.status === 'Late').length;
     const absent = filteredAttendance.filter(record => record.status === 'Absent').length;
     const excused = filteredAttendance.filter(record => record.status === 'Excused').length;
     
-    const presentPercent = Math.round((present / total) * 100);
-    const latePercent = Math.round((late / total) * 100);
-    const absentPercent = Math.round((absent / total) * 100);
-    const excusedPercent = Math.round((excused / total) * 100);
+    const presentPercent = Math.round((present / total) * 100) || 0;
+    const latePercent = Math.round((late / total) * 100) || 0;
+    const absentPercent = Math.round((absent / total) * 100) || 0;
+    const excusedPercent = Math.round((excused / total) * 100) || 0;
     
     return {
       presentPercent,
@@ -117,6 +129,20 @@ const AttendancePage = () => {
   };
 
   const stats = calculateStats();
+
+  // Get unique months from attendance data for the dropdown
+  const getAvailableMonths = () => {
+    const monthsSet = new Set(attendanceData.map(record => record.monthYear));
+    let sortedMonths =  Array.from(monthsSet).sort((a, b) => {
+      // Sort in descending order (most recent first)
+      const dateA = new Date(a);
+      const dateB = new Date(b);
+      return dateB - dateA;
+    });
+    return ['All Months', ...sortedMonths];
+  };
+
+  const months = getAvailableMonths();
 
   // Animation variants
   const containerVariants = {
@@ -149,12 +175,6 @@ const AttendancePage = () => {
     }
   };
 
-  // Months for the dropdown
-  const months = [
-    'March 2025', 'February 2025', 'January 2025', 
-    'December 2024', 'November 2024'
-  ];
-
   return (
     <div className="min-h-screen bg-gray-50 pt-20 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -164,7 +184,7 @@ const AttendancePage = () => {
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Attendance Records</h1>
               <p className="mt-1 text-sm text-gray-500">
-                Track your attendance across all your courses
+                Track your attendance across all your subjects
               </p>
             </div>
             <div className="mt-4 md:mt-0 flex gap-2">
@@ -181,15 +201,15 @@ const AttendancePage = () => {
                 ))}
               </select>
               
-              {/* Course filter */}
+              {/* Subject filter */}
               <select
-                value={selectedCourse}
-                onChange={(e) => setSelectedCourse(e.target.value)}
+                value={selectedSubject}
+                onChange={(e) => setSelectedSubject(e.target.value)}
                 className="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
               >
-                {courses.map((course) => (
-                  <option key={course} value={course}>
-                    {course}
+                {subjects.map((subject) => (
+                  <option key={subject} value={subject}>
+                    {subject}
                   </option>
                 ))}
               </select>
@@ -318,7 +338,7 @@ const AttendancePage = () => {
         >
           <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
             <h3 className="text-lg leading-6 font-medium text-gray-900">
-              {selectedCourse === 'All Courses' ? 'All Attendance Records' : `Attendance for ${selectedCourse}`}
+              {selectedSubject === 'All Subjects' ? 'All Attendance Records' : `Attendance for ${selectedSubject}`}
             </h3>
             <p className="mt-1 max-w-2xl text-sm text-gray-500">
               {currentMonth} - Showing {filteredAttendance.length} records
@@ -333,7 +353,7 @@ const AttendancePage = () => {
                     Date
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Course
+                    Subject
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
@@ -363,7 +383,7 @@ const AttendancePage = () => {
                       {record.date}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {record.course}
+                      {record.subject}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(record.status)}`}>
@@ -419,7 +439,7 @@ const AttendancePage = () => {
             </motion.div>
 
             <motion.div variants={itemVariants} className="mb-6">
-              <h4 className="text-md font-semibold text-gray-800 mb-2">Course-Specific Insights</h4>
+              <h4 className="text-md font-semibold text-gray-800 mb-2">Subject-Specific Insights</h4>
               <ul className="list-disc pl-5 space-y-2 text-sm text-gray-600">
                 {stats.absentPercent > 10 && (
                   <li>
@@ -431,9 +451,9 @@ const AttendancePage = () => {
                     You've been late to {stats.latePercent}% of your classes. Punctuality is an important soft skill valued by employers across all industries.
                   </li>
                 )}
-                {selectedCourse !== 'All Courses' && (
+                {selectedSubject !== 'All Subjects' && (
                   <li>
-                    For {selectedCourse}, your attendance pattern suggests {
+                    For {selectedSubject}, your attendance pattern suggests {
                       filteredAttendance.filter(r => r.status === 'Present' || r.status === 'Excused').length / filteredAttendance.length >= 0.9
                         ? 'strong engagement and interest. This could indicate a potential career path aligned with this subject area.'
                         : 'some challenges with engagement. Consider speaking with your instructor or a tutor for additional support.'
@@ -465,14 +485,16 @@ const AttendancePage = () => {
                   <li>
                     Schedule a meeting with a career counselor to discuss how your academic engagement patterns might influence career choices. Your strongest attendance is in {
                       (() => {
-                        const courseAttendance = {};
-                        courses.filter(c => c !== 'All Courses').forEach(course => {
-                          const records = attendanceData.filter(r => r.course === course);
-                          const presentCount = records.filter(r => r.status === 'Present' || r.status === 'Excused').length;
-                          courseAttendance[course] = (presentCount / records.length) * 100;
+                        const subjectAttendance = {};
+                        subjects.filter(s => s !== 'All Subjects').forEach(subject => {
+                          const records = attendanceData.filter(r => r.subject === subject && r.monthYear === currentMonth);
+                          if (records.length > 0) {
+                            const presentCount = records.filter(r => r.status === 'Present' || r.status === 'Excused').length;
+                            subjectAttendance[subject] = (presentCount / records.length) * 100;
+                          }
                         });
-                        const bestCourse = Object.keys(courseAttendance).sort((a, b) => courseAttendance[b] - courseAttendance[a])[0];
-                        return bestCourse || 'your courses';
+                        const bestSubject = Object.keys(subjectAttendance).sort((a, b) => subjectAttendance[b] - subjectAttendance[a])[0];
+                        return bestSubject || 'your subjects';
                       })()
                     }, which might indicate where your interests lie.
                   </li>
