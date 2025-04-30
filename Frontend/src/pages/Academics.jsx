@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from 'axios';
-import { Download, Book, Award, BarChart } from 'lucide-react';
+import { Download, Book, Award, BarChart ,Brain, BookOpen, Sparkles, LoaderCircle } from 'lucide-react';
 import { Document, Page, Text, View, StyleSheet, pdf, Font, Image } from "@react-pdf/renderer";
 import { saveAs } from 'file-saver';
 import { useStudent } from '../context/userContext';
 import { analyseReport } from '../utils/analyseReport';
 import { generalTips, specificTips } from '../prompts/prompt';
+import AiReport from './AiReport';
+import { sub } from 'date-fns';
 
 // Define PDF styles
 const styles = StyleSheet.create({
@@ -267,42 +269,50 @@ const AcademicReport = () => {
 
   const { id } = useParams();
   // const [student, setStudent] = useState(stu);
-  const {student} = useStudent();
+  const { student } = useStudent();
+  console.log(student)
   const [loading, setLoading] = useState(false);
+  const [AiLoading, setAiLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('academic');
   const [generalSuggestion, setGeneralSuggestion] = useState([]);
   const [subjectSpecificSuggestion, setSubjectSpecificSuggestion] = useState([]);
 
-  useEffect(() => {
-    const fetchStudentData = async () => {
-      try {
-        setLoading(true);
-        // In a real implementation, this would fetch actual data
-        // const response = await axios.get(`/api/students/${id}`);
-        // setStudent(response.data);
-        setLoading(false);
-      } catch (err) {
-        setError('Failed to load student data');
-        console.error(err);
-        setLoading(false);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchStudentData = async () => {
+  //     try {
+  //       setLoading(true);
+  //       // In a real implementation, this would fetch actual data
+  //       // const response = await axios.get(`/api/students/${id}`);
+  //       // setStudent(response.data);
+  //       setLoading(false);
+  //     } catch (err) {
+  //       setError('Failed to load student data');
+  //       console.error(err);
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchStudentData();
-  }, [id]);
+  //   fetchStudentData();
+  // }, [id]);
 
   const handleTabChange = async(tab) => {
 
     setActiveTab(tab);
+
     if(tab === 'improvement')
     {
-      let generalAiResult = await analyseReport(student.academicRecords,generalTips);
-      setGeneralSuggestion(generalAiResult);
-
-      let specificAiResult = await analyseReport(student.academicRecords, specificTips);
-      // console.log(specificAiResult);
-      setSubjectSpecificSuggestion(specificAiResult);
+      setAiLoading(true);
+      const [generalAiResult, specificAiResult] = await Promise.all([
+        analyseReport(student.academicRecords, generalTips),
+        analyseReport(student.academicRecords, specificTips),
+      ]);
+      setAiLoading(false);
+      console.log("generalAiResult", generalAiResult)
+      console.log("specificAiResult", specificAiResult)
+      
+      setGeneralSuggestion(generalAiResult ? generalAiResult : []);
+      setSubjectSpecificSuggestion(specificAiResult ? specificAiResult : []);
 
 
     }
@@ -587,10 +597,15 @@ const AcademicReport = () => {
   };
 
   // Create Improvement Suggestions PDF Document Component
-  const ImprovementSuggestionsPDF = () => {
-    const suggestions = generateImprovementSuggestions();
+  const ImprovementSuggestionsPDF = ({generalSuggestions, subjectSpecificSuggestions}) => {
+    // const suggestions = generateImprovementSuggestions();
+    const suggestions = {
+      generalSuggestions,subjectSpecificSuggestions
+    }
+    console.log("suggestions", suggestions)
     
     return (
+      
       <Document>
         <Page size="A4" style={styles.page}>
           {/* Header */}
@@ -799,7 +814,7 @@ const AcademicReport = () => {
   };
 
   // Function to download PDF based on active tab
-  const downloadReport = async () => {
+  const downloadReport = async (generalSuggestion,subjectSpecificSuggestion) => {
     try {
       let blob;
       
@@ -807,7 +822,7 @@ const AcademicReport = () => {
         blob = await pdf(<AcademicPerformancePDF />).toBlob();
         saveAs(blob, `${student?.name || 'Student'}_academic_performance.pdf`);
       } else {
-        blob = await pdf(<ImprovementSuggestionsPDF />).toBlob();
+        blob = await pdf(<ImprovementSuggestionsPDF generalSuggestions={generalSuggestion} subjectSpecificSuggestions={subjectSpecificSuggestion} />).toBlob();
         saveAs(blob, `${student?.name || 'Student'}_improvement_suggestions.pdf`);
       }
     } catch (error) {
@@ -851,7 +866,7 @@ const AcademicReport = () => {
               <p className="text-purple-200">{student?.name} | Enrollment: {student?.enrollment}</p>
             </div>
             <button 
-              onClick={downloadReport}
+              onClick={()=>downloadReport(generalSuggestion, subjectSpecificSuggestion)}
               className="bg-white text-purple-700 px-4 py-2 rounded-md flex items-center hover:bg-purple-50 transition-colors"
             >
               <Download size={18} className="mr-2" />
@@ -887,6 +902,7 @@ const AcademicReport = () => {
             </nav>
           </div>
           
+          {console.log(generalSuggestion, subjectSpecificSuggestion)}
           {/* Content */}
           <div className="p-6">
             {activeTab === 'academic' ? (
@@ -1039,176 +1055,9 @@ const AcademicReport = () => {
                 </div>
               </div>
             ) : (
-              <div>
-                {/* Student Info */}
-                <div className="flex items-center mb-6">
-                  <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mr-4">
-                    <span className="text-purple-700 font-bold text-xl">{student?.name.charAt(0)}</span>
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-800">{student?.name}</h2>
-                    <p className="text-gray-600">{student?.course?.courseName} | {student?.semester} Semester</p>
-                  </div>
-                </div>
-                
-                {/* General Study Tips */}
-                <div className="mb-8">
-                  <h3 className="text-lg font-semibold text-gray-700 mb-4">General Study Tips</h3>
-                  <div className="bg-white border border-purple-100 rounded-lg p-4 shadow-sm">
-                    <ul className="space-y-2">
-                      {generalSuggestion.map((tip, index) => (
-                        <li key={`tip-${index}`} className="flex items-start">
-                          <span className="text-purple-700 mr-2">•</span>
-                          <span className="text-gray-700">{tip}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-                
-                {/* Subject-specific suggestions */}
-                {subjectSpecificSuggestion.length > 0 && (
-                  <div className="mb-8">
-                    <h3 className="text-lg font-semibold text-gray-700 mb-4">Subject-Specific Improvement Plans</h3>
-                    
-                    {subjectSpecificSuggestion.map((subjectSuggestion, index) => (
-                      <div 
-                        key={`subject-suggestion-${index}`} 
-                        className="bg-white border border-purple-100 rounded-lg p-4 shadow-sm mb-4"
-                      >
-                        <div className="flex justify-between items-center mb-3">
-                          <h4 className="font-bold text-purple-700">{subjectSuggestion.subject}</h4>
-                          <span className="text-sm text-purple-700">Current: {subjectSuggestion.percentage}%</span>
-                        </div>
-                        
-                        <h5 className="font-medium text-gray-700 mt-4 mb-2">Customized Improvement Strategies:</h5>
-                        
-                        <ul className="space-y-2 mb-4">
-                          {subjectSuggestion.suggestions.map((tip, tipIndex) => (
-                            <li key={`subject-tip-${index}-${tipIndex}`} className="flex items-start">
-                              <span className="text-purple-700 mr-2">•</span>
-                              <span className="text-gray-700">{tip}</span>
-                            </li>
-                          ))}
-                        </ul>
-                        
-                        <div className="bg-blue-50 p-3 rounded-lg">
-                          <h5 className="font-medium text-blue-800 mb-1">AI-Generated Tip:</h5>
-                          <p className="text-blue-800 text-sm">
-                            Consider creating concept maps to visualize the relationships between key topics in {subjectSuggestion.subject}. 
-                            This can help identify knowledge gaps and strengthen your understanding of complex relationships.
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                
-                {/* Weekly Study Planner */}
-                <div className="mb-8">
-                  <h3 className="text-lg font-semibold text-gray-700 mb-4">Weekly Study Planner</h3>
-                  <div className="bg-white border border-purple-100 rounded-lg p-4 shadow-sm">
-                    <p className="text-gray-700 mb-4">
-                      Here's a recommended weekly study plan that prioritizes subjects that need improvement while maintaining performance in stronger areas:
-                    </p>
-                    
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full border-collapse">
-                        <thead>
-                          <tr className="bg-purple-50">
-                            <th className="py-2 px-4 border-b border-purple-100 text-left text-xs font-medium text-purple-700 uppercase tracking-wider">Day</th>
-                            <th className="py-2 px-4 border-b border-purple-100 text-left text-xs font-medium text-purple-700 uppercase tracking-wider">Morning</th>
-                            <th className="py-2 px-4 border-b border-purple-100 text-left text-xs font-medium text-purple-700 uppercase tracking-wider">Afternoon</th>
-                            <th className="py-2 px-4 border-b border-purple-100 text-left text-xs font-medium text-purple-700 uppercase tracking-wider">Evening</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-purple-100">
-                          {['Monday', 'Wednesday', 'Friday', 'Sunday'].map((day, index) => {
-                            const weakSubjects = subjectSpecificSuggestion.map(s => s.subject);
-                            
-                            return (
-                              <tr key={`day-${index}`} className="hover:bg-gray-50">
-                                <td className="py-3 px-4 text-sm text-gray-800">{day}</td>
-                                <td className="py-3 px-4 text-sm text-gray-600">
-                                  {day === 'Monday' ? (weakSubjects[0] || 'Review Notes') : 
-                                   day === 'Sunday' ? 'Rest/Light Review' : 'Practice Problems'}
-                                </td>
-                                <td className="py-3 px-4 text-sm text-gray-600">
-                                  {day === 'Friday' ? (weakSubjects[1] || weakSubjects[0] || 'Problem-solving') : 
-                                   day === 'Sunday' ? 'Practice Tests' : 'Group Study'}
-                                </td>
-                                <td className="py-3 px-4 text-sm text-gray-600">
-                                  {day === 'Wednesday' ? 'All Subjects Review' : 
-                                   day === 'Monday' ? weakSubjects[0] : 
-                                   day === 'Sunday' ? 'Rest' : 'Reading Ahead'}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                    
-                    <div className="bg-green-50 p-3 rounded-lg mt-4">
-                      <h5 className="font-medium text-green-800 mb-1">Remember:</h5>
-                      <ul className="space-y-1">
-                        <li className="flex items-start text-sm">
-                          <span className="text-green-700 mr-2">•</span>
-                          <span className="text-green-800">Study in 25-minute focused sessions with 5-minute breaks (Pomodoro technique)</span>
-                        </li>
-                        <li className="flex items-start text-sm">
-                          <span className="text-green-700 mr-2">•</span>
-                          <span className="text-green-800">Allocate more time to your weaker subjects</span>
-                        </li>
-                        <li className="flex items-start text-sm">
-                          <span className="text-green-700 mr-2">•</span>
-                          <span className="text-green-800">Get 7-8 hours of sleep for optimal cognitive function</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Additional Resources */}
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-700 mb-4">Additional Resources</h3>
-                  <div className="bg-white border border-purple-100 rounded-lg p-4 shadow-sm">
-                    <p className="text-gray-700 mb-4">
-                      These resources can help you improve your understanding and performance:
-                    </p>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="bg-purple-50 rounded-lg p-4">
-                        <h4 className="font-medium text-purple-700 mb-2">Online Learning Platforms</h4>
-                        <ul className="space-y-1">
-                          <li className="flex items-start text-sm">
-                            <span className="text-purple-700 mr-2">•</span>
-                            <span className="text-gray-700">Coursera - Free university courses</span>
-                          </li>
-                          <li className="flex items-start text-sm">
-                            <span className="text-purple-700 mr-2">•</span>
-                            <span className="text-gray-700">Khan Academy - Fundamentals</span>
-                          </li>
-                        </ul>
-                      </div>
-                      
-                      <div className="bg-purple-50 rounded-lg p-4">
-                        <h4 className="font-medium text-purple-700 mb-2">Study Tools</h4>
-                        <ul className="space-y-1">
-                          <li className="flex items-start text-sm">
-                            <span className="text-purple-700 mr-2">•</span>
-                            <span className="text-gray-700">Anki - Spaced repetition flashcards</span>
-                          </li>
-                          <li className="flex items-start text-sm">
-                            <span className="text-purple-700 mr-2">•</span>
-                            <span className="text-gray-700">Forest - Focus timer</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              
+              <AiReport Ailoading={AiLoading} generalSuggestion={generalSuggestion} subjectSpecificSuggestion={subjectSpecificSuggestion}/>
+              
             )}
           </div>
           

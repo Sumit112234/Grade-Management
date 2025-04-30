@@ -15,6 +15,7 @@ import AcademicReport from './pages/Academics'
 import AssignMarksPage from './adminPages/AddMarks'
 import { ToastContainer } from 'react-toastify'
 import Temp from './pages/Temp'
+import ForgotPassword from './pages/ForgotPassword'
 
 
 // Academic k Subject-Specific Improvement Plans ko dekhna h error kyu aa raha h
@@ -46,6 +47,7 @@ function App() {
         <Route path='/profile' element={<Protected><StudentProfile/></Protected>}></Route>
         <Route path='/analysis' element={<Protected><AcademicAnalysis/></Protected>}></Route>
         <Route path='/academic' element={<Protected><AcademicReport/></Protected>}></Route>
+        <Route path='/password-reset' element={<ForgotPassword/>}></Route>
 
         {/* admin route */}
 

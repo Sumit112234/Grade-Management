@@ -3,16 +3,20 @@ import axios from "axios"
 
 let backend_url = import.meta.env.VITE_APP_Backend_Url;
 
-export const analyseReport = async (data, prompt) => {
+export const analyseReport = async (data, prompt , special) => {
   //  try {
-     let res = await axios.post(`${backend_url}/academic/analyse`, { data, prompt });
+     let res = await axios.post(`${backend_url}/academic/analyse`, { data, prompt, special });
  
      const responseText = res?.data?.feedback || "";
+     const isSpecial = res.data.special;
      console.log("original : ", res)
 
      // Extract array using regex
-     const match = responseText.match(/\[\s*"(.*?)"\s*\]/s);
-     if (!match) return false;
+     if(!isSpecial){
+       const match = responseText.match(/\[\s*"(.*?)"\s*\]/s);
+       if (!match) return false;
+      }
+      
  
      // Extract the actual array string from full text
      const arrayString = responseText.slice(

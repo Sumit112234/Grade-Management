@@ -18,7 +18,7 @@ export const addAcademicRecord = async (req, res) => {
 export const analyzeStudentPerformance = async (req, res) => {
 
   // console.log(req.body);
-  const {data , prompt} = req.body; // Student data is already populated
+  const {data , prompt, special} = req.body; // Student data is already populated
 
   const query = `${prompt} ${JSON.stringify(data)}`;
   
@@ -34,7 +34,7 @@ export const analyzeStudentPerformance = async (req, res) => {
   // const feedback = aiResponse.data.reply || "No feedback available.";
   console.log(aiResponse)
 
-  res.status(200).json({message : "Feedback generated successfully", feedback});
+  res.status(200).json({message : "Feedback generated successfully", feedback , special});
   return ;
 
   // try {

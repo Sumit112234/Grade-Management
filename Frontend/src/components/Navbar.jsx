@@ -8,19 +8,41 @@ import { fetchAllStudents } from '../utils/api';
 import { postUtility } from '../utils/studentUtility';
 import { updateStudent } from '../utils/userHandler';
 import { generalTips } from '../prompts/prompt';
+import { toast } from 'react-toastify';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+   const [loading, setLoading] = useState(false);
   const location = useLocation();
   const { student , logout } = useStudent();
-  const navigate = useNavigate();  // Check if the current route is active
+  const navigate = useNavigate();  
+  // console.log(student)
   const isActive = (path) => {
     return location.pathname === path;
   };
 
   const handleLogout = async() => {
+
+    setLoading(true)
+    logout()
+    .then((status)=>{
+      setLoading(false)
+      toast.success('Logout successful!');
+
+      setTimeout(() => {
+        if(status)
+          navigate('/login');
+        
+      }, 1500);
+    })
+    .catch(()=>{
+      toast.error('Logout failed!');
+      setLoading(false);
+    })
+
     console.log('hello ji')
+    return ;
     let stu = {
       "student": {
         "name": "John Doe",
@@ -92,25 +114,14 @@ const Navbar = () => {
        }
      ]};
 
-    let result = await analyseReport(data.academicRecords, generalTips);
+    // let result = await analyseReport(data.academicRecords, generalTips);
     // await updateStudent(stu);
     // await postUtility();
     // storeCourseData();
     // let res = await fetchAllStudents();
     // console.log(res);
     // analyseReport(stu);
-    logout()
-    .then((status)=>{
-
-      if(status)
-        toast.success('Logout successful!');
-
-      setTimeout(() => {
-        if(status)
-          navigate('/login');
-        
-      }, 1500);
-    })
+ 
   };
 
   // Handle scroll event to change navbar appearance on scroll
@@ -160,7 +171,7 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex space-x-8">
+          { student && student.userType === "student" && <div className="hidden md:flex space-x-8">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
@@ -182,7 +193,7 @@ const Navbar = () => {
                 )}
               </Link>
             ))}
-          </div>
+          </div>}
 
           {/* User menu and profile */}
           <div className="hidden md:flex items-center space-x-6">
@@ -209,19 +220,42 @@ const Navbar = () => {
             <div className="flex items-center">
               <Link to="/profile" className="flex items-center space-x-2">
                 <div className="w-8 h-8 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-700 font-semibold">
-                  JS
+                  {student && student.profilePic ? (
+                    <img src={student.profilePic} alt="Profile" className="w-full h-full rounded-full" />
+                  ) : (
+                    <span>{student ? student.name.charAt(0) : "U"}</span>
+                  )}
                 </div>
-                <span className="text-sm font-medium text-gray-700">John Smith</span>
+                <span className="text-sm font-medium text-gray-700">{student ? student.name : ""}</span>
               </Link>
             </div>
             <div className="cursor-pointer rounded-2xl">
-        <button 
-          onClick={handleLogout}
-          className="flex items-center  px-4 py-2 bg-red-400  hover:text-black cursor-pointer text-white rounded-md hover:bg-red-600 transition-colors"
-        >
-          <LogOut className="w-4 h-4 mr-2" />
-          Logout
-        </button>
+       
+       {
+        student ? (           <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleLogout}
+                    disabled={loading}
+                    className={`w-full py-3 px-4 bg-red-600 text-white font-medium cursor-pointer rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition-all ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  >
+                    {loading ? (
+                      <span className="flex items-center justify-center">
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Wait...
+                      </span>
+                    ) : (
+                      'Logout'
+                    )}
+                  </motion.button>) : (
+          <Link to="/login" className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors">
+            Login
+          </Link>
+        )
+       }
       </div>
           </div>
 

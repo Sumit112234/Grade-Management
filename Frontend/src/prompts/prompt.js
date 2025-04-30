@@ -5,9 +5,9 @@ export const specificTips = `Based on the following academic records of a studen
 For each weak subject, return an object in the following format:
 
 {
-  subject: "Subject Name",
-  percentage: "Score percentage as string (e.g. '65.0')",
-  suggestions: [
+  "subject": "Subject Name",
+  "percentage": "Score percentage as string (e.g. '65.0')",
+  "suggestions": [
     "Short, actionable suggestion 1",
     "Short, actionable suggestion 2",
     ...
@@ -52,15 +52,35 @@ Format:
 
 [
   {
-    title: "Insight Title",
-    description: "A short meaningful insight here.",
-    icon: "📈",
-    color: "bg-gradient-to-r from-blue-500 to-purple-500"
+    "title": "Academic Progress",
+    "description": "A short meaningful insight here.",
+    "icon": "📈",
+    "color": "bg-gradient-to-r from-blue-500 to-purple-500"
   },
-  ...
+  {
+    "title" : "Attendance Impact",
+    ....
+  },
 ]
 After getting response from you I will directly cheak it using this logic and your response 
 must pass this logic.
      const match = YourResponse.match(/\[\s*"(.*?)"\s*\]/s);
      if (!match) return false;  
 `;
+
+export const AnalysisPrompt = `You are an educational performance coach. Based on the provided student's academic records, skills, and extracurricular activities, analyze the data and generate a list of study suggestions, strategies, and motivational tips.
+
+Return the result as a single JavaScript object inside an array with the following exact structure and key names:
+
+[{
+  "Identify Weak Subjects": [/* a list of subject names where marks < 70% or a fallback string if none */],
+  "Suggest Study Techniques": [], // a list of study techniques for better retention and understanding
+  "Time Management Tips": [], // a list of time management strategies
+  "Motivational Advice": [],// some motivational quotes or advice to keep the student engaged
+  "Skill & Extracurricular Improvement": [],
+  "Consistency & Practice": [
+    "Review class materials weekly",
+    "Practice solving problems regularly",
+    "Form or join study groups for difficult subjects"
+  ]
+}]`

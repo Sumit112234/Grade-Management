@@ -10,6 +10,12 @@ export const StudentContext = createContext();
 export const StudentProvider = ({ children }) => {
   const [student, setStudent] = useState(null);
 
+  const getStudent = async () => {
+    const data = await fetchStudent();
+    console.log(data)
+    setStudent(data);
+  };
+
   const signup = async(data)=>{
     try {
       console.log(data , backend_url)
@@ -18,6 +24,7 @@ export const StudentProvider = ({ children }) => {
           withCredentials : true,
         }
       )
+      getStudent()
       console.log(res);
       return true;
     } catch (e) {
@@ -34,7 +41,8 @@ export const StudentProvider = ({ children }) => {
         }
       )
       console.log(res);
-      setStudent(res.data.user);
+      // setStudent(res.data.user);
+      getStudent()
 
       return true;
     } catch (e) {
@@ -58,18 +66,30 @@ export const StudentProvider = ({ children }) => {
     }
 
   }
+  const changePassword = async(email, password)=>{
+    try {
+     
+      let res = await axios.post(`${backend_url}/students/forgot-password`,{ email, password},
+        {
+          withCredentials : true,
+        }
+      )
+      // res = await res.json();
+      // console.log(res);
+      return true;
+    } catch (e) {
+      console.log(e);
+      return false
+    }
+
+  }
 
   useEffect(() => {
-    const getStudent = async () => {
-      const data = await fetchStudent();
-      console.log(data)
-      setStudent(data);
-    };
     getStudent();
   }, []);
 
   return (
-    <StudentContext.Provider value={{ student ,setStudent,signup,login,logout}}>
+    <StudentContext.Provider value={{ student ,changePassword,setStudent,signup,login,logout}}>
       {children}
     </StudentContext.Provider>
   );

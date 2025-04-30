@@ -14,6 +14,7 @@ import {
 import { useStudent } from '../context/userContext';
 import { analyseReport } from '../utils/analyseReport';
 import OverallAnalysis from './OverallAnalysis';
+import { AnalysisPrompt } from '../prompts/prompt';
 
 const AcademicAnalysis = () => {
   const { student } = useStudent();
@@ -90,17 +91,17 @@ const AcademicAnalysis = () => {
           let data = {
             "student": student
           };
-          analyseReport(data)
-            .then((report) => {
-              console.log(report);
-              setFeedback(typeof report === 'string' ? JSON.parse(report) : report);
-              setLoading(false);
-            })
-            .catch((err) => {
-              console.error("Error calling analyseReport:", err);
-              setFeedback(mockFeedback);
-              setLoading(false);
-            });
+          // analyseReport({academicData : student.academicData, skills : student.skills, extracurricular : student.extracurricularActivities}, AnalysisPrompt)
+          //   .then((report) => {
+          //     console.log(report);
+          //     setFeedback(report[0] ? report[0] : mockFeedback);
+          //     setLoading(false);
+          //   })
+          //   .catch((err) => {
+          //     console.error("Error calling analyseReport:", err);
+          //     setFeedback(mockFeedback);
+          //     setLoading(false);
+          //   });
         } catch (err) {
           console.error("Error in feedback generation:", err);
           setFeedback(mockFeedback);
@@ -490,7 +491,7 @@ const AcademicAnalysis = () => {
       <div className="bg-blue-50 p-4 rounded-md">
         <h3 className="font-medium text-blue-800 mb-2">Identify Weak Subjects</h3>
         <ul className="list-disc pl-5 text-blue-700 space-y-1">
-          {feedback["Identify Weak Subjects"] && feedback["Identify Weak Subjects"].length > 0 ? (
+          {feedback && feedback["Identify Weak Subjects"] && feedback["Identify Weak Subjects"].length > 0 ? (
             feedback["Identify Weak Subjects"].map((subject, index) => (
               <li key={index}>{subject}</li>
             ))
@@ -504,7 +505,7 @@ const AcademicAnalysis = () => {
       <div className="bg-green-50 p-4 rounded-md">
         <h3 className="font-medium text-green-800 mb-2">Study Techniques</h3>
         <ul className="list-disc pl-5 text-green-700 space-y-1">
-          {feedback["Suggest Study Techniques"] && feedback["Suggest Study Techniques"].length > 0 ? (
+          {feedback && feedback["Suggest Study Techniques"] && feedback["Suggest Study Techniques"].length > 0 ? (
             feedback["Suggest Study Techniques"].map((technique, index) => (
               <li key={index}>{technique}</li>
             ))
@@ -518,7 +519,7 @@ const AcademicAnalysis = () => {
       <div className="bg-purple-50 p-4 rounded-md">
         <h3 className="font-medium text-purple-800 mb-2">Time Management Tips</h3>
         <ul className="list-disc pl-5 text-purple-700 space-y-1">
-          {feedback["Time Management Tips"] && feedback["Time Management Tips"].length > 0 ? (
+          {feedback && feedback["Time Management Tips"] && feedback["Time Management Tips"].length > 0 ? (
             feedback["Time Management Tips"].map((tip, index) => (
               <li key={index}>{tip}</li>
             ))
@@ -532,7 +533,7 @@ const AcademicAnalysis = () => {
       <div className="bg-yellow-50 p-4 rounded-md">
         <h3 className="font-medium text-yellow-800 mb-2">Motivational Advice</h3>
         <ul className="list-disc pl-5 text-yellow-700 space-y-1">
-          {feedback["Motivational Advice"] && feedback["Motivational Advice"].length > 0 ? (
+          {feedback && feedback["Motivational Advice"] && feedback["Motivational Advice"].length > 0 ? (
             feedback["Motivational Advice"].map((advice, index) => (
               <li key={index}>{advice}</li>
             ))
@@ -546,7 +547,7 @@ const AcademicAnalysis = () => {
       <div className="bg-red-50 p-4 rounded-md">
         <h3 className="font-medium text-red-800 mb-2">Skill & Extracurricular Improvement</h3>
         <ul className="list-disc pl-5 text-red-700 space-y-1">
-          {feedback["Skill & Extracurricular Improvement"] && feedback["Skill & Extracurricular Improvement"].length > 0 ? (
+          {feedback && feedback["Skill & Extracurricular Improvement"] && feedback["Skill & Extracurricular Improvement"].length > 0 ? (
             feedback["Skill & Extracurricular Improvement"].map((improvement, index) => (
               <li key={index}>{improvement}</li>
             ))
@@ -560,7 +561,7 @@ const AcademicAnalysis = () => {
       <div className="bg-indigo-50 p-4 rounded-md">
         <h3 className="font-medium text-indigo-800 mb-2">Consistency & Practice</h3>
         <ul className="list-disc pl-5 text-indigo-700 space-y-1">
-          {feedback["Consistency & Practice"] && feedback["Consistency & Practice"].length > 0 ? (
+          {feedback && feedback["Consistency & Practice"] && feedback["Consistency & Practice"].length > 0 ? (
             feedback["Consistency & Practice"].map((practice, index) => (
               <li key={index}>{practice}</li>
             ))

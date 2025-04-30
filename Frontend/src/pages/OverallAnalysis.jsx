@@ -28,13 +28,13 @@ const OverallAnalysis = () => {
   const {student} = useStudent();
   
   useEffect(()=>{
-    if(student && false)
+    if(student)
     {
       let query = {
         academicRecords : student.academicRecords,
 
       }
-        analyseReport(query, overallAnalysis)
+        analyseReport(query, overallAnalysis, true)
         .then((data)=>{
             console.log(data)
             if(data){

@@ -152,24 +152,25 @@ const HomePage = () => {
   // Testimonials for logged-out users
   const testimonials = [
     {
-      name: 'Sarah Johnson',
-      role: 'Computer Science Student',
-      content: 'This platform has transformed my academic journey. The personalized recommendations helped me discover my passion for AI.',
-      avatar: '/api/placeholder/100/100'
+      name: 'Ranchhod Das Chanchad',
+      role: 'Engineering Student',
+      content: 'Marks ke peechhe mat bhaago, excellence ke peechhe bhaago. Ye website wahi sikhaata hai — tumhare interest, tumhare performance ke hisaab se tumhein guide karta hai. Mind-blowing yaar!',
+      avatar: 'https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTO8X9yqKzoDWdXy7g7cgZmRZVJKv7eWCdMDLabNUOm3u-JW0OcjwnIQXO78UCasDut7QnXyAskfB1dwgqu9qsOEbo8JrajKWVujFw4PA'
     },
     {
-      name: 'David Chen',
-      role: 'Business Administration Student',
-      content: 'The career resources available on this platform helped me secure an internship at my dream company.',
-      avatar: '/api/placeholder/100/100'
+      name: 'Raju Rastogi',
+      role: 'Engineering Student',
+      content: 'Main hamesha darr ke saath padhai karta tha, par is platform ke personalized reports ne mujhe confidence diya. Ab future ko lekar zyada clarity hai… aur mummy-papa bhi khush hain!',
+      avatar: 'https://ninesilos.wordpress.com/wp-content/uploads/2013/07/raju-rastogi.jpg'
     },
     {
-      name: 'Maria Rodriguez',
-      role: 'Electrical Engineering Student',
-      content: 'The academic tracking tools have helped me stay organized and focused on my goals.',
-      avatar: '/api/placeholder/100/100'
+      name: 'Farhan Qureshi',
+      role: 'Engineering Student',
+      content: 'Main photography mein career banana chahta tha, par kabhi sure nahi tha. Is platform ke interest analysis ne meri aankhein khol di. Ab main apna passion follow kar raha hoon, bina regret ke. Aur ha "Abba maan gye hain!"',
+      avatar: 'https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcRQGRgSjvcVpPz5eGcKOzPGBAum1XSsJ1raAFWp1PsbDQoEs3f5WOxj17LEHZ49RG7jS1LI6EFpddORoXMEpUa_4CjiaPHIfkCrmsCO6UI'
     }
   ];
+  
 
   
 
@@ -991,148 +992,224 @@ const HomePage = () => {
             </motion.div>
           </div>
         </motion.section>
-
-        {/* App download section */}
         <motion.section 
-          className="py-24 bg-gradient-to-r from-gray-900 to-indigo-900 text-white"
+          className="py-24 bg-gradient-to-b from-indigo-600 to-purple-700 text-white relative overflow-hidden"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
         >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col md:flex-row md:items-center">
+          {/* Decorative background patterns */}
+          <div className="absolute inset-0 opacity-10">
+            <svg width="100%" height="100%" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <pattern id="mandala" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse">
+                  <circle cx="25" cy="25" r="20" fill="none" stroke="#FFF" strokeWidth="0.5" />
+                  <circle cx="25" cy="25" r="15" fill="none" stroke="#FFF" strokeWidth="0.5" />
+                  <circle cx="25" cy="25" r="10" fill="none" stroke="#FFF" strokeWidth="0.5" />
+                  <circle cx="25" cy="25" r="5" fill="none" stroke="#FFF" strokeWidth="0.5" />
+                  <path d="M 5 25 L 45 25 M 25 5 L 25 45" stroke="#FFF" strokeWidth="0.5" />
+                  <path d="M 10 10 L 40 40 M 10 40 L 40 10" stroke="#FFF" strokeWidth="0.5" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#mandala)" />
+            </svg>
+          </div>
+          
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="flex flex-col md:flex-row items-center">
               <motion.div 
-                className="md:w-1/2 mb-12 md:mb-0"
+                className="md:w-1/2 mb-12 md:mb-0 text-center md:text-left"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl mb-4">
-                  Take Your Learning On The Go
+                <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl mb-6">
+                  Take Your Learning Anywhere
                 </h2>
-                <p className="text-xl text-gray-300 max-w-lg mb-8">
-                  Access your courses, assignments, and notifications from anywhere with our mobile application.
+                <p className="text-xl text-indigo-100 mb-8 max-w-lg">
+                  Download our mobile app and access all your academic resources on the go. Study anytime, anywhere.
                 </p>
-                <div className="flex flex-wrap gap-4">
+                <div className="flex flex-wrap justify-center md:justify-start gap-4">
                   <motion.a
                     href="#"
-                    className="inline-flex items-center px-6 py-3 rounded-md bg-white text-gray-900 hover:bg-gray-100 transition-colors duration-300"
+                    className="flex items-center bg-black text-white px-6 py-3 rounded-xl hover:bg-gray-800 transition-colors"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M17.9,19.8c-0.9,0-1.7-0.2-2.5-0.7c-0.1,0-0.2-0.1-0.4-0.1c-0.1,0-0.3,0-0.4,0.1c-0.8,0.5-1.6,0.7-2.5,0.7c-0.9,0-1.7-0.2-2.5-0.7 C9.5,19,9.4,19,9.2,19c-0.1,0-0.3,0-0.4,0.1c-0.8,0.5-1.6,0.7-2.5,0.7c-0.9,0-1.7-0.2-2.5-0.7C3.7,19,3.5,19,3.4,19 c-0.1,0-0.3,0-0.4,0.1c-0.2,0.1-0.4,0.1-0.5,0.1c-0.2,0-0.3-0.1-0.4-0.2C2,18.9,1.9,18.7,1.9,18.6c0-0.2,0.1-0.4,0.2-0.5 c0.1-0.1,0.3-0.2,0.5-0.2c0.3,0,0.5,0.1,0.8,0.2c0.1,0.1,0.3,0.1,0.4,0.1c0.1,0,0.3,0,0.4-0.1c0.8-0.5,1.6-0.7,2.5-0.7 c0.9,0,1.7,0.2,2.5,0.7C9.3,18.1,9.5,18.2,9.6,18.2c0.1,0,0.3,0,0.4-0.1c0.8-0.5,1.6-0.7,2.5-0.7c0.9,0,1.7,0.2,2.5,0.7 c0.1,0.1,0.3,0.1,0.4,0.1c0.1,0,0.3,0,0.4-0.1c0.8-0.5,1.6-0.7,2.5-0.7c0.9,0,1.7,0.2,2.5,0.7c0.1,0.1,0.3,0.1,0.4,0.1 c0.1,0,0.3,0,0.4-0.1c0.2-0.1,0.5-0.2,0.8-0.2c0.2,0,0.4,0.1,0.5,0.2c0.1,0.1,0.2,0.3,0.2,0.5c0,0.2-0.1,0.3-0.2,0.4 c-0.1,0.1-0.3,0.2-0.4,0.2c-0.2,0-0.4,0-0.5-0.1c-0.1-0.1-0.3-0.1-0.4-0.1c-0.1,0-0.3,0-0.4,0.1C19.6,19.6,18.8,19.8,17.9,19.8z M18.3,15.8c-0.4-0.5-0.6-1.1-0.6-1.7c0-0.7,0.2-1.3,0.6-1.7c0.4-0.5,1-0.7,1.6-0.7c0,0,0.1,0,0.1,0c0.1,0,0.1,0,0.2,0 c0.3,0.1,0.5,0.2,0.7,0.5c0.2,0.2,0.3,0.5,0.3,0.8c0,0.2-0.1,0.3-0.2,0.5c-0.1,0.1-0.3,0.2-0.5,0.2c-0.3,0-0.5-0.2-0.5-0.5 c0-0.1,0-0.1,0-0.2c0-0.1-0.1-0.2-0.2-0.3C19.7,12.6,19.6,12.6,19.5,12.6c-0.2,0-0.4,0.1-0.6,0.3c-0.2,0.2-0.3,0.6-0.3,1.2 c0,0.6,0.1,1,0.3,1.2c0.2,0.2,0.4,0.3,0.6,0.3c0.1,0,0.2,0,0.3-0.1c0.1,0,0.1-0.1,0.2-0.2c0-0.1,0.1-0.1,0.1-0.2c0,0,0-0.1,0-0.1 c0-0.3,0.2-0.5,0.5-0.5c0.1,0,0.3,0.1,0.4,0.2c0.1,0.1,0.2,0.2,0.2,0.4c0,0.3-0.1,0.6-0.3,0.8c-0.2,0.2-0.4,0.4-0.7,0.5 c-0.1,0-0.1,0-0.2,0c0,0-0.1,0-0.1,0C19.3,16.5,18.7,16.3,18.3,15.8z M14.6,15.8c-0.4-0.5-0.6-1.1-0.6-1.7c0-0.7,0.2-1.3,0.6-1.7 c0.4-0.5,1-0.7,1.6-0.7c0,0,0.1,0,0.1,0c0.1,0,0.1,0,0.2,0c0.3,0.1,0.5,0.2,0.7,0.5c0.2,0.2,0.3,0.5,0.3,0.8c0,0.2-0.1,0.3-0.2,0.5 c-0.1,0.1-0.3,0.2-0.5,0.2c-0.3,0-0.5-0.2-0.5-0.5c0-0.1,0-0.1,0-0.2c0-0.1-0.1-0.2-0.2-0.3C16,12.6,15.9,12.6,15.9,12.6 c-0.2,0-0.4,0.1-0.6,0.3c-0.2,0.2-0.3,0.6-0.3,1.2c0,0.6,0.1,1,0.3,1.2c0.2,0.2,0.4,0.3,0.6,0.3c0.1,0,0.2,0,0.3-0.1 c0.1,0,0.1-0.1,0.2-0.2c0-0.1,0.1-0.1,0.1-0.2c0,0,0-0.1,0-0.1c0-0.3,0.2-0.5,0.5-0.5c0.1,0,0.3,0.1,0.4,0.2 c0.1,0.1,0.2,0.2,0.2,0.4c0,0.3-0.1,0.6-0.3,0.8c-0.2,0.2-0.4,0.4-0.7,0.5c-0.1,0-0.1,0-0.2,0c0,0-0.1,0-0.1,0 C15.6,16.5,15,16.3,14.6,15.8z M4.5,15c-0.1-0.1-0.2-0.3-0.2-0.5V8c0-0.2,0.1-0.4,0.2-0.5C4.6,7.4,4.8,7.3,5,7.3h5 c0.2,0,0.4,0.1,0.5,0.2C10.7,7.6,10.8,7.8,10.8,8v6.5c0,0.2-0.1,0.4-0.2,0.5c-0.1,0.1-0.3,0.2-0.5,0.2c-0.2,0-0.4-0.1-0.5-0.2 C9.4,14.9,9.3,14.7,9.3,14.5V8.8H5.8v5.8c0,0.2-0.1,0.4-0.2,0.5C5.4,15.2,5.2,15.3,5,15.3C4.8,15.3,4.6,15.2,4.5,15z M3.8,5.3 c-0.1-0.1-0.2-0.3-0.2-0.5c0-0.2,0.1-0.4,0.2-0.5C3.9,4.1,4.1,4,4.3,4h9c0.2,0,0.4,0.1,0.5,0.2c0.1,0.1,0.2,0.3,0.2,0.5 c0,0.2-0.1,0.4-0.2,0.5c-0.1,0.1-0.3,0.2-0.5,0.2h-9C4.1,5.5,3.9,5.4,3.8,5.3z"/>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z" />
+                      <path fillRule="evenodd" d="M10 4a6 6 0 100 12 6 6 0 000-12zm0 10a4 4 0 110-8 4 4 0 010 8z" clipRule="evenodd" />
                     </svg>
-                    App Store
+                    <div>
+                      <div className="text-xs">Download on the</div>
+                      <div className="text-xl font-semibold">App Store</div>
+                    </div>
                   </motion.a>
                   <motion.a
                     href="#"
-                    className="inline-flex items-center px-6 py-3 rounded-md bg-white text-gray-900 hover:bg-gray-100 transition-colors duration-300"
+                    className="flex items-center bg-black text-white px-6 py-3 rounded-xl hover:bg-gray-800 transition-colors"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M16.6,16.6L16.6,16.6c-0.2,0.2-0.4,0.3-0.7,0.4c-0.3,0-0.5-0.1-0.7-0.3l-2.6-2.6l-2.6,2.6c-0.2,0.2-0.4,0.3-0.7,0.3
-                      c-0.3,0-0.5-0.1-0.7-0.3c-0.4-0.4-0.4-1,0-1.4l2.6-2.6L8.6,9.9c-0.4-0.4-0.4-1,0-1.4c0.4-0.4,1-0.4,1.4,0l2.6,2.6l2.6-2.6
-                      c0.4-0.4,1-0.4,1.4,0c0.4,0.4,0.4,1,0,1.4l-2.6,2.6l2.6,2.6C17,15.6,17,16.2,16.6,16.6z M22.4,5.5V22c0,1.1-0.9,2-2,2H3.6
-                      c-1.1,0-2-0.9-2-2V5.5c0-1.1,0.9-2,2-2h16.7C21.4,3.5,22.4,4.4,22.4,5.5z M20.4,9.6c0-0.4-0.3-0.8-0.8-0.8H4.4
-                      c-0.4,0-0.8,0.3-0.8,0.8v11.6c0,0.4,0.3,0.8,0.8,0.8h15.1c0.4,0,0.8-0.3,0.8-0.8V9.6z"/>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
                     </svg>
-                    Google Play
+                    <div>
+                      <div className="text-xs">GET IT ON</div>
+                      <div className="text-xl font-semibold">Google Play</div>
+                    </div>
                   </motion.a>
                 </div>
               </motion.div>
+              
               <motion.div 
-                className="md:w-1/2 md:pl-10"
-                variants={slideInRight}
-                initial="hidden"
-                whileInView="visible"
+                className="md:w-1/2 relative"
+                variants={float}
+                animate="animate"
               >
-                <img
-                  src="/api/placeholder/500/300"
-                  alt="Mobile app screens"
-                  className="h-auto w-full rounded-lg shadow-2xl"
-                />
+                <motion.div
+                  className="relative mx-auto"
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8 }}
+                >
+                  {/* Mobile app mockup with Indian design elements */}
+                  <div className="bg-white p-2 rounded-3xl shadow-2xl w-64 mx-auto overflow-hidden border-4 border-indigo-300">
+                    <div className="rounded-2xl overflow-hidden">
+                      <img 
+                        src="/api/placeholder/250/500" 
+                        alt="Mobile app" 
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="mt-4 h-3 w-16 bg-black rounded-full mx-auto"></div>
+                  </div>
+                  
+                  {/* Decorative floating elements */}
+                  <motion.div 
+                    className="absolute -top-8 -right-8 w-24 h-24 bg-yellow-400 rounded-full opacity-20"
+                    animate={{
+                      scale: [1, 1.2, 1],
+                      rotate: [0, 180, 360],
+                    }}
+                    transition={{
+                      duration: 8,
+                      repeat: Infinity,
+                    }}
+                  />
+                  <motion.div 
+                    className="absolute -bottom-8 -left-8 w-16 h-16 bg-green-400 rounded-full opacity-20"
+                    animate={{
+                      scale: [1, 1.3, 1],
+                      rotate: [360, 180, 0],
+                    }}
+                    transition={{
+                      duration: 6,
+                      repeat: Infinity,
+                    }}
+                  />
+                </motion.div>
               </motion.div>
             </div>
           </div>
         </motion.section>
 
-
-        {/* Footer */}
-        
-        <footer className="bg-gray-900 text-white">
-          <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              <div>
-                <h3 className="text-lg font-semibold mb-4">Educational Platform</h3>
-                <p className="text-gray-400">
-                  Empowering students to achieve their academic and career goals.
+        {/* Footer with Indian-inspired design */}
+        <footer className="bg-purple-700 text-amber-100">
+          {/* Wave divider with Indian colors */}
+          <div className="relative">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" className="fill-amber-50">
+              <path d="M0,96L48,106.7C96,117,192,139,288,144C384,149,480,139,576,128C672,117,768,107,864,122.7C960,139,1056,181,1152,186.7C1248,192,1344,160,1392,144L1440,128L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"></path>
+            </svg>
+          </div>
+          
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-20">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
+              <div className="lg:col-span-2">
+                <h3 className="text-2xl font-bold text-amber-300 mb-4">Student Success Portal</h3>
+                <p className="text-amber-200 mb-6 max-w-md">
+                  Empowering students across India with the tools and resources they need to succeed in academics and beyond.
                 </p>
-                <div className="flex space-x-4 mt-4">
-                  <a href="#" className="text-gray-400 hover:text-white">
-                    <span className="sr-only">Facebook</span>
-                    <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" />
-                    </svg>
-                  </a>
-                  <a href="#" className="text-gray-400 hover:text-white">
-                    <span className="sr-only">Twitter</span>
-                    <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
-                    </svg>
-                  </a>
-                  <a href="#" className="text-gray-400 hover:text-white">
-                    <span className="sr-only">Instagram</span>
-                    <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path fillRule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clipRule="evenodd" />
-                    </svg>
-                  </a>
+                <div className="flex space-x-4">
+                  {['facebook', 'twitter', 'instagram', 'linkedin'].map(platform => (
+                    <a 
+                      key={platform} 
+                      href="#" 
+                      className="w-10 h-10 bg-orange-700 rounded-full flex items-center justify-center hover:bg-amber-500 transition-colors"
+                    >
+                      <span className="sr-only">{platform}</span>
+                      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                      </svg>
+                    </a>
+                  ))}
                 </div>
               </div>
+              
               <div>
-                <h3 className="text-lg font-semibold mb-4">Resources</h3>
-                <ul className="space-y-2">
-                  <li><a href="#" className="text-gray-400 hover:text-white">Learning Resources</a></li>
-                  <li><a href="#" className="text-gray-400 hover:text-white">Career Services</a></li>
-                  <li><a href="#" className="text-gray-400 hover:text-white">Student Success</a></li>
-                  <li><a href="#" className="text-gray-400 hover:text-white">Academic Calendar</a></li>
+                <h3 className="text-lg font-semibold text-amber-300 mb-4">Quick Links</h3>
+                <ul className="space-y-3">
+                  {['Home', 'About Us', 'Courses', 'Resources', 'Career Services'].map(link => (
+                    <li key={link}>
+                      <a href="#" className="text-amber-200 hover:text-white transition-colors">
+                        {link}
+                      </a>
+                    </li>
+                  ))}
                 </ul>
               </div>
+              
               <div>
-                <h3 className="text-lg font-semibold mb-4">Support</h3>
-                <ul className="space-y-2">
-                  <li><a href="#" className="text-gray-400 hover:text-white">Help Center</a></li>
-                  <li><a href="#" className="text-gray-400 hover:text-white">Contact Us</a></li>
-                  <li><a href="#" className="text-gray-400 hover:text-white">System Status</a></li>
-                  <li><a href="#" className="text-gray-400 hover:text-white">Privacy Policy</a></li>
+                <h3 className="text-lg font-semibold text-amber-300 mb-4">Support</h3>
+                <ul className="space-y-3">
+                  {['Help Center', 'Contact Us', 'FAQs', 'Terms of Service', 'Privacy Policy'].map(link => (
+                    <li key={link}>
+                      <a href="#" className="text-amber-200 hover:text-white transition-colors">
+                        {link}
+                      </a>
+                    </li>
+                  ))}
                 </ul>
               </div>
+              
               <div>
-                <h3 className="text-lg font-semibold mb-4">Subscribe</h3>
-                <p className="text-gray-400 mb-4">Stay updated with the latest news and resources.</p>
-                <form className="flex gap-2">
-                  <input
-                    type="email"
-                    className="min-w-0 flex-1 px-4 py-2 text-gray-900 placeholder-gray-500 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Enter your email"
-                  />
-                  <button
-                    type="submit"
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
-                    Subscribe
-                  </button>
-                </form>
+                <h3 className="text-lg font-semibold text-amber-300 mb-4">Contact Info</h3>
+                <ul className="space-y-3 text-amber-200">
+                  <li className="flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 mt-0.5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                    </svg>
+                    123 Education Lane, Mumbai 400001
+                  </li>
+                  <li className="flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 mt-0.5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                    </svg>
+                    +91 123 456 7890
+                  </li>
+                  <li className="flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 mt-0.5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                      <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                    </svg>
+                    contact@studentportal.edu
+                  </li>
+                </ul>
               </div>
             </div>
-            <div className="mt-12 border-t border-gray-800 pt-8">
-              <p className="text-gray-400 text-center">
-                © {new Date().getFullYear()} Educational Platform. All rights reserved.
-              </p>
+            
+            <div className="mt-12 pt-8 border-t border-orange-800 flex flex-col md:flex-row justify-between items-center">
+              <p className="text-amber-300">© 2025 StudyCare Portal. All rights reserved.</p>
+              <div className="mt-4 md:mt-0">
+                  <p>Created by Sumit Baghel</p>
+              </div>
             </div>
           </div>
+          
+          {/* Decorative footer border with Indian tricolor inspiration */}
+          <div className="h-2 bg-gradient-to-r from-orange-500 via-white to-green-500"></div>
         </footer>
+     
       </motion.div>
     </AnimatePresence>
   );

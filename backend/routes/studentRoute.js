@@ -14,6 +14,7 @@ router.post("/assign-course", assignCourse);
 router.post("/assign-marks", assignMarks);
 router.post("/register", saveUser);
 router.post("/login", loginUser);
+router.post("/forgot-password", updateStudentDetails);
 router.get("/logout", auth,logoutUser);
 router.put('/update-details',updateStudentDetails)
 router.post('/update-student',updateStudent)

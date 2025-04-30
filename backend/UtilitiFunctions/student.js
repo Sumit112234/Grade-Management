@@ -246,8 +246,19 @@ export async function loginUser(req,res){
 
 export async function updateStudentDetails(req, res) {
     try {
-        const user = req.user;
+        // const user = req.user;
         const { name, email, password, mobile } = req.body;
+        console.log(req.body.data, email, password, mobile);
+        if(!email)
+        {
+            return res.status(400).json({
+                message: "Email is required.",
+                status: false,
+                error: true,
+            });
+        }
+
+        const user = await Student.findOne({email}); // Get the user from the request
         const image = req.file; // Check if file is uploaded
         console.log(req.body);
         let updatedData = {};
@@ -269,6 +280,9 @@ export async function updateStudentDetails(req, res) {
         }
 
         // Update the user in the database
+
+        console.log(user._id, updatedData);
+
         const updatedUser = await Student.findByIdAndUpdate(user._id, updatedData, { new: true });
 
         if (!updatedUser) {

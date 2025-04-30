@@ -1,62 +1,75 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, BookOpen, Calendar, Lightbulb, ChevronRight, Sparkles, Clock } from 'lucide-react';
 import LoadingScreen from './LoadingBeforeAiGenerating';
+import { useStudent } from '../context/userContext';
 
 // Import the LoadingScreen component
 // import LoadingScreen from './LoadingScreen';
 
-export default function Temp() {
+export default function AiReport({Ailoading, generalSuggestion, subjectSpecificSuggestion}) {
+    console.log("AiReport",Ailoading,generalSuggestion,subjectSpecificSuggestion)
   const [loading, setLoading] = useState(true);
-  const [generalSuggestion, setGeneralSuggestion] = useState([]);
-  const [subjectSpecificSuggestion, setSubjectSpecificSuggestion] = useState([]);
-  const [student, setStudent] = useState(null);
+//   const [generalSuggestion, setGeneralSuggestion] = useState([]);
+//   const [subjectSpecificSuggestion, setSubjectSpecificSuggestion] = useState([]);
+//   const [student, setStudent] = useState(null);
+  const { student } = useStudent();
+
+
+  useEffect(() => {
+    // Simulate data loading
+    if(!Ailoading) {
+        setTimeout(() => {
+        setLoading(false);
+        }, 2000);
+    }
+  },[Ailoading])
 
   // Simulate data loading
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setStudent({
-        name: "Alex Johnson",
-        course: { courseName: "Computer Science" },
-        semester: "3rd"
-      });
+//   useEffect(() => {
+//     const timer = setTimeout(() => {
+//       setStudent({
+//         name: "Alex Johnson",
+//         course: { courseName: "Computer Science" },
+//         semester: "3rd"
+//       });
       
-      setGeneralSuggestion([
-        "Create a dedicated study environment free from distractions",
-        "Use active recall techniques instead of passive reading",
-        "Study in 25-minute focused sessions with 5-minute breaks",
-        "Review material within 24 hours of learning it to improve retention",
-        "Form study groups for complex subjects to gain different perspectives"
-      ]);
+//       setGeneralSuggestion([
+//         "Create a dedicated study environment free from distractions",
+//         "Use active recall techniques instead of passive reading",
+//         "Study in 25-minute focused sessions with 5-minute breaks",
+//         "Review material within 24 hours of learning it to improve retention",
+//         "Form study groups for complex subjects to gain different perspectives"
+//       ]);
       
-      setSubjectSpecificSuggestion([
-        {
-          subject: "Data Structures",
-          percentage: 65,
-          suggestions: [
-            "Practice implementing data structures from scratch",
-            "Solve algorithm problems on platforms like LeetCode",
-            "Create visual representations of complex data structures",
-            "Work through textbook exercises with increasing difficulty"
-          ]
-        },
-        {
-          subject: "Calculus II",
-          percentage: 72,
-          suggestions: [
-            "Focus on understanding the underlying concepts rather than memorizing formulas",
-            "Practice integration techniques daily with varied problems",
-            "Use visualization tools to understand 3D concepts",
-            "Form a study group specifically for working through complex problems"
-          ]
-        }
-      ]);
+//       setSubjectSpecificSuggestion([
+//         {
+//           subject: "Data Structures",
+//           percentage: 65,
+//           suggestions: [
+//             "Practice implementing data structures from scratch",
+//             "Solve algorithm problems on platforms like LeetCode",
+//             "Create visual representations of complex data structures",
+//             "Work through textbook exercises with increasing difficulty"
+//           ]
+//         },
+//         {
+//           subject: "Calculus II",
+//           percentage: 72,
+//           suggestions: [
+//             "Focus on understanding the underlying concepts rather than memorizing formulas",
+//             "Practice integration techniques daily with varied problems",
+//             "Use visualization tools to understand 3D concepts",
+//             "Form a study group specifically for working through complex problems"
+//           ]
+//         }
+//       ]);
       
-      setLoading(false);
-    }, 8000); // Simulate 8 seconds of loading time
+//       setLoading(false);
+//     }, 8000); // Simulate 8 seconds of loading time
     
-    return () => clearTimeout(timer);
-  }, []);
+//     return () => clearTimeout(timer);
+//   }, []);
 
   // Show loading screen if data is not ready
   if (loading || generalSuggestion.length === 0 || subjectSpecificSuggestion.length === 0) {
@@ -100,7 +113,6 @@ export default function Temp() {
             </div>
             <div>
               <h1 className="text-2xl font-bold">AI Study Planner</h1>
-              <p className="text-purple-100">Personalized learning strategies for academic success</p>
             </div>
           </div>
         </div>
@@ -111,7 +123,7 @@ export default function Temp() {
             initial="hidden"
             animate="visible"
           >
-            {/* Student Info */}
+            {/* Student Info
             <motion.div variants={itemVariants} className="flex items-center mb-6">
               <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mr-4">
                 <span className="text-purple-700 font-bold text-xl">{student?.name.charAt(0)}</span>
@@ -121,7 +133,7 @@ export default function Temp() {
                 <p className="text-gray-600">{student?.course?.courseName} | {student?.semester} Semester</p>
               </div>
             </motion.div>
-            
+             */}
             {/* General Study Tips */}
             <motion.div variants={itemVariants} className="mb-8">
               <div className="flex items-center mb-4">
