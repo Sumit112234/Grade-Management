@@ -146,7 +146,7 @@ const Navbar = () => {
     { title: 'Analysis', path: '/analysis' },
     { title: 'Attendance', path: '/attendance' },
     { title: 'Academic', path: '/academic' },
-    { title: 'Resources', path: '/resources' },
+    { title: 'Ask Ai', path: '/chat' },
   ];
 
   return (

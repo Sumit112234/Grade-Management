@@ -5,6 +5,15 @@ let backend_url = import.meta.env.VITE_APP_Backend_Url;
 
 export const analyseReport = async (data, prompt , special) => {
   //  try {
+
+      if(special === "chat")
+      {
+        
+        let res = await axios.post(`${backend_url}/academic/analyse`, { data, prompt, special });
+        return res?.data?.feedback || "Some technical error occurred. Please try again later.";
+
+      }
+
      let res = await axios.post(`${backend_url}/academic/analyse`, { data, prompt, special });
  
      const responseText = res?.data?.feedback || "";

@@ -9,16 +9,17 @@ import {
   Legend, 
   ResponsiveContainer,
   BarChart,
-  Bar
+  Bar,
+  PieChart,
+  Pie,
+  Cell
 } from 'recharts';
 import { useStudent } from '../context/userContext';
 import { analyseReport } from '../utils/analyseReport';
-import OverallAnalysis from './OverallAnalysis';
 import { AnalysisPrompt } from '../prompts/prompt';
 
-const AcademicAnalysis = () => {
+ const AcademicAnalysis = () => {
   const { student } = useStudent();
-  console.log(student)
   
   const [academicData, setAcademicData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,6 +30,10 @@ const AcademicAnalysis = () => {
   const [careerRecommendations, setCareerRecommendations] = useState([]);
   const [extracurricularData, setExtracurricularData] = useState([]);
   const [feedback, setFeedback] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview');
+  
+  // Theme colors
+  const COLORS = ['#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe', '#ede9fe'];
   
   // Fetch student data when component mounts
   useEffect(() => {
@@ -81,32 +86,10 @@ const AcademicAnalysis = () => {
         extracurricular
       );
       
-      // Generate mock feedback if student exists since we might not be able to call the API
+      // Generate mock feedback if student exists
       if (student) {
-        // Generate mock feedback if API call fails
         const mockFeedback = generateMockFeedback(transformedAcademicRecords, attendance, skills);
-        
-        try {
-          // Try the API call first
-          let data = {
-            "student": student
-          };
-          // analyseReport({academicData : student.academicData, skills : student.skills, extracurricular : student.extracurricularActivities}, AnalysisPrompt)
-          //   .then((report) => {
-          //     console.log(report);
-          //     setFeedback(report[0] ? report[0] : mockFeedback);
-          //     setLoading(false);
-          //   })
-          //   .catch((err) => {
-          //     console.error("Error calling analyseReport:", err);
-          //     setFeedback(mockFeedback);
-          //     setLoading(false);
-          //   });
-        } catch (err) {
-          console.error("Error in feedback generation:", err);
-          setFeedback(mockFeedback);
-          setLoading(false);
-        }
+        setFeedback(mockFeedback);
       }
       
       setLoading(false);
@@ -338,6 +321,16 @@ const AcademicAnalysis = () => {
     }));
   };
   
+  // Get attendance data for pie chart
+  const getAttendanceChartData = () => {
+    return [
+      { name: 'Present', value: attendanceStats.present || 0 },
+      { name: 'Absent', value: attendanceStats.absent || 0 },
+      { name: 'Late', value: attendanceStats.late || 0 },
+      { name: 'Excused', value: attendanceStats.excused || 0 }
+    ].filter(item => item.value > 0);
+  };
+  
   // Get weak subjects (subjects with below average performance)
   const getWeakSubjects = () => {
     if (!subjectPerformance.length) return [];
@@ -352,240 +345,147 @@ const AcademicAnalysis = () => {
       .map(subject => subject.subject);
   };
   
-  if (loading) {
-    return <div className="p-8 text-center">Loading academic analysis...</div>;
-  }
+  // Calculate average grade
+  const calculateAverageGrade = () => {
+    if (!academicData.length) return { grade: 0, percentage: 0 };
+    
+    const gradePoints = academicData.reduce((sum, record) => {
+      const percentage = (record.marks / record.totalMarks) * 100;
+      return sum + (percentage / 10);
+    }, 0);
+    
+    const percentage = academicData.reduce((sum, record) => {
+      return sum + ((record.marks / record.totalMarks) * 100);
+    }, 0) / academicData.length;
+    
+    return {
+      grade: (gradePoints / academicData.length).toFixed(2),
+      percentage: percentage.toFixed(2)
+    };
+  };
   
-  return (
-    <div className="p-4 md:p-8 bg-amber-300">
-      <h1 className="text-3xl font-bold pt-20 mb-6">Academic Analysis</h1>
-      
-      {error && (
-        <div className="bg-red-100 text-red-700 p-4 rounded-md mb-6">
-          {error}
-        </div>
-      )}
-      
-      {student && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 ">
-          {/* Student Profile Card */}
-          {/* <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-4">Student Profile</h2>
-            <div className="flex items-center mb-4">
-              <div className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 mr-4">
-                {student.profilePic ? (
-                  <img 
-                    src={student.profilePic} 
-                    alt={student.name} 
-                    className="w-full h-full rounded-full object-cover" 
-                  />
-                ) : (
-                  <span className="text-2xl">{student.name.charAt(0)}</span>
-                )}
-              </div>
-              <div>
-                <h3 className="text-lg font-medium">{student.name}</h3>
-                <p className="text-gray-600">{student.enrollment}</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-gray-600">Course:</p>
-                <p className="font-medium">{student.course?.courseName || 'MCA'}</p>
-              </div>
-              <div>
-                <p className="text-gray-600">Semester:</p>
-                <p className="font-medium">{student.semester}</p>
-              </div>
-              <div>
-                <p className="text-gray-600">Age:</p>
-                <p className="font-medium">{student.age}</p>
-              </div>
-              <div>
-                <p className="text-gray-600">Email:</p>
-                <p className="font-medium">{student.email}</p>
-              </div>
-              <div>
-                <p className="text-gray-600">Phone:</p>
-                <p className="font-medium">{student.phone || "N/A"}</p>
-              </div>
-            </div>
-          </div> */}
-          
-          {/* Overall Performance Card */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-4">Overall Performance</h2>
-            {academicData.length > 0 ? (
-              <>
-                <div className="mb-4">
-                  <p className="text-gray-600">Average Grade:</p>
-                  <p className="text-3xl font-bold">
-                    {(academicData.reduce((sum, record) => {
-                      // For MCA course, we're using percentage directly as grading might be different
-                      const percentage = (record.marks / record.totalMarks) * 100;
-                      // Convert percentage to a 10-point scale
-                      return sum + (percentage / 10);
-                    }, 0) / academicData.length).toFixed(2)}
-                  </p>
-                </div>
-                <div className="mb-4">
-                  <p className="text-gray-600">Average Percentage:</p>
-                  <p className="text-3xl font-bold">
-                    {(academicData.reduce((sum, record) => {
-                      return sum + ((record.marks / record.totalMarks) * 100);
-                    }, 0) / academicData.length).toFixed(2)}%
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-600">Total Subjects:</p>
-                  <p className="font-medium">
-                    {new Set(academicData.map(record => record.subject)).size}
-                  </p>
-                </div>
-              </>
-            ) : (
-              <p>No academic data available.</p>
-            )}
-          </div>
-          
-          {/* Attendance Card */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-4">Attendance Summary</h2>
-            {attendanceData.length > 0 ? (
-              <>
-                <div className="mb-4">
-                  <p className="text-gray-600">Attendance Rate:</p>
-                  <p className="text-3xl font-bold">{attendanceStats.percentage}%</p>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-gray-600">Present:</p>
-                    <p className="font-medium">{attendanceStats.present} days</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Absent:</p>
-                    <p className="font-medium">{attendanceStats.absent} days</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Late:</p>
-                    <p className="font-medium">{attendanceStats.late || 0} days</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600">Excused:</p>
-                    <p className="font-medium">{attendanceStats.excused || 0} days</p>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <p>No attendance data available.</p>
-            )}
-          </div>
-        </div>
-      )}
-      
-      {student && feedback && (
-  <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-    <h2 className="text-xl font-semibold mb-4">Personalized Feedback & Suggestions</h2>
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {/* Weak Subjects */}
-      <div className="bg-blue-50 p-4 rounded-md">
-        <h3 className="font-medium text-blue-800 mb-2">Identify Weak Subjects</h3>
-        <ul className="list-disc pl-5 text-blue-700 space-y-1">
-          {feedback && feedback["Identify Weak Subjects"] && feedback["Identify Weak Subjects"].length > 0 ? (
-            feedback["Identify Weak Subjects"].map((subject, index) => (
-              <li key={index}>{subject}</li>
-            ))
-          ) : (
-            <li>No weak subjects identified. Keep up the good work!</li>
-          )}
-        </ul>
-      </div>
-
-      {/* Study Techniques */}
-      <div className="bg-green-50 p-4 rounded-md">
-        <h3 className="font-medium text-green-800 mb-2">Study Techniques</h3>
-        <ul className="list-disc pl-5 text-green-700 space-y-1">
-          {feedback && feedback["Suggest Study Techniques"] && feedback["Suggest Study Techniques"].length > 0 ? (
-            feedback["Suggest Study Techniques"].map((technique, index) => (
-              <li key={index}>{technique}</li>
-            ))
-          ) : (
-            <li>No study techniques suggested. Consider exploring different learning methods.</li>
-          )}
-        </ul>
-      </div>
-
-      {/* Time Management Tips */}
-      <div className="bg-purple-50 p-4 rounded-md">
-        <h3 className="font-medium text-purple-800 mb-2">Time Management Tips</h3>
-        <ul className="list-disc pl-5 text-purple-700 space-y-1">
-          {feedback && feedback["Time Management Tips"] && feedback["Time Management Tips"].length > 0 ? (
-            feedback["Time Management Tips"].map((tip, index) => (
-              <li key={index}>{tip}</li>
-            ))
-          ) : (
-            <li>No time management tips provided. Consider setting aside dedicated study time.</li>
-          )}
-        </ul>
-      </div>
-
-      {/* Motivational Advice */}
-      <div className="bg-yellow-50 p-4 rounded-md">
-        <h3 className="font-medium text-yellow-800 mb-2">Motivational Advice</h3>
-        <ul className="list-disc pl-5 text-yellow-700 space-y-1">
-          {feedback && feedback["Motivational Advice"] && feedback["Motivational Advice"].length > 0 ? (
-            feedback["Motivational Advice"].map((advice, index) => (
-              <li key={index}>{advice}</li>
-            ))
-          ) : (
-            <li>No motivational advice provided. Remember to celebrate your achievements and stay positive!</li>
-          )}
-        </ul>
-      </div>
-
-      {/* Skills & Extracurricular Improvement */}
-      <div className="bg-red-50 p-4 rounded-md">
-        <h3 className="font-medium text-red-800 mb-2">Skill & Extracurricular Improvement</h3>
-        <ul className="list-disc pl-5 text-red-700 space-y-1">
-          {feedback && feedback["Skill & Extracurricular Improvement"] && feedback["Skill & Extracurricular Improvement"].length > 0 ? (
-            feedback["Skill & Extracurricular Improvement"].map((improvement, index) => (
-              <li key={index}>{improvement}</li>
-            ))
-          ) : (
-            <li>No skills or extracurricular improvements suggested. Consider exploring new hobbies or interests.</li>
-          )}
-        </ul>
-      </div>
-
-      {/* Consistency & Practice */}
-      <div className="bg-indigo-50 p-4 rounded-md">
-        <h3 className="font-medium text-indigo-800 mb-2">Consistency & Practice</h3>
-        <ul className="list-disc pl-5 text-indigo-700 space-y-1">
-          {feedback && feedback["Consistency & Practice"] && feedback["Consistency & Practice"].length > 0 ? (
-            feedback["Consistency & Practice"].map((practice, index) => (
-              <li key={index}>{practice}</li>
-            ))
-          ) : (
-            <li>No consistency or practice tips provided. Consider setting aside dedicated time for review and practice.</li>
-          )}
-        </ul>
-      </div>
+  // Tab navigation component
+  const TabNavigation = () => (
+    <div className="flex flex-wrap mb-6 bg-white rounded-lg shadow-md">
+      <button 
+        className={`py-4 px-6 font-medium text-sm rounded-tl-lg ${activeTab === 'overview' ? 'bg-purple-600 text-white' : 'bg-white text-purple-900'}`}
+        onClick={() => setActiveTab('overview')}
+      >
+        Overview
+      </button>
+      <button 
+        className={`py-4 px-6 font-medium text-sm ${activeTab === 'performance' ? 'bg-purple-600 text-white' : 'bg-white text-purple-900'}`}
+        onClick={() => setActiveTab('performance')}
+      >
+        Performance
+      </button>
+      <button 
+        className={`py-4 px-6 font-medium text-sm ${activeTab === 'feedback' ? 'bg-purple-600 text-white' : 'bg-white text-purple-900'}`}
+        onClick={() => setActiveTab('feedback')}
+      >
+        Feedback
+      </button>
+      <button 
+        className={`py-4 px-6 font-medium text-sm ${activeTab === 'career' ? 'bg-purple-600 text-white' : 'bg-white text-purple-900'}`}
+        onClick={() => setActiveTab('career')}
+      >
+        Career
+      </button>
+      <button 
+        className={`py-4 px-6 font-medium text-sm rounded-tr-lg ${activeTab === 'records' ? 'bg-purple-600 text-white' : 'bg-white text-purple-900'}`}
+        onClick={() => setActiveTab('records')}
+      >
+        Records
+      </button>
     </div>
-  </div>
-)}
-      
-      {student && academicData.length > 0 && (
-        <>
-          {/* Performance Trends */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 className="text-xl font-semibold mb-4">Performance Trends</h2>
-            <div className="h-80">
+  );
+  
+  // Overview content
+  const OverviewContent = () => {
+    const averageGrade = calculateAverageGrade();
+    
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold mb-4 text-purple-900">Overall Performance</h2>
+          {academicData.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col items-center justify-center p-6 bg-purple-50 rounded-lg">
+                <p className="text-purple-700 mb-2">Average Grade</p>
+                <p className="text-4xl font-bold text-purple-900">{averageGrade.grade}</p>
+                <p className="text-sm text-purple-600 mt-1">out of 10.0</p>
+              </div>
+              <div className="flex flex-col items-center justify-center p-6 bg-purple-50 rounded-lg">
+                <p className="text-purple-700 mb-2">Average Percentage</p>
+                <p className="text-4xl font-bold text-purple-900">{averageGrade.percentage}%</p>
+                <p className="text-sm text-purple-600 mt-1">across all subjects</p>
+              </div>
+              <div className="md:col-span-2">
+                <div className="p-4 bg-purple-50 rounded-lg">
+                  <div className="flex justify-between mb-2">
+                    <span className="text-purple-700">Total Subjects</span>
+                    <span className="font-medium text-purple-900">
+                      {new Set(academicData.map(record => record.subject)).size}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-purple-700">Total Records</span>
+                    <span className="font-medium text-purple-900">{academicData.length}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="text-purple-700">No academic data available.</p>
+          )}
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold mb-4 text-purple-900">Attendance Summary</h2>
+          {attendanceData.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col justify-center p-6 bg-purple-50 rounded-lg">
+                <p className="text-purple-700 mb-2">Attendance Rate</p>
+                <p className="text-4xl font-bold text-purple-900">{attendanceStats.percentage}%</p>
+                <p className="text-sm text-purple-600 mt-1">Total days: {attendanceStats.totalDays}</p>
+              </div>
+              
+              <div className="h-48 md:h-auto">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={getAttendanceChartData()}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={60}
+                      fill="#8884d8"
+                      dataKey="value"
+                      label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {getAttendanceChartData().map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          ) : (
+            <p className="text-purple-700">No attendance data available.</p>
+          )}
+        </div>
+        
+        <div className="md:col-span-2 bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold mb-4 text-purple-900">Performance Trend</h2>
+          {academicData.length > 0 ? (
+            <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={getPerformanceTrendData()}
                   margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e9d5ff" />
                   <XAxis dataKey="year" />
                   <YAxis domain={[0, 100]} />
                   <Tooltip />
@@ -594,221 +494,1343 @@ const AcademicAnalysis = () => {
                     type="monotone"
                     dataKey="averagePercentage"
                     name="Average Percentage"
-                    stroke="#8884d8"
+                    stroke="#8b5cf6"
                     strokeWidth={2}
                     activeDot={{ r: 8 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
             </div>
+          ) : (
+            <p className="text-purple-700">No academic data available to show trends.</p>
+          )}
+        </div>
+      </div>
+    );
+  };
+  
+  // Performance content
+  const PerformanceContent = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h2 className="text-xl font-semibold mb-4 text-purple-900">Subject Performance</h2>
+        {academicData.length > 0 ? (
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={getSubjectPerformanceData()}
+                margin={{ top: 10, right: 30, left: 0, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#e9d5ff" />
+                <XAxis dataKey="subject" />
+                <YAxis domain={[0, 100]} />
+                <Tooltip />
+                <Legend />
+                <Bar
+                  dataKey="average"
+                  name="Average Performance (%)"
+                  fill="#8b5cf6"
+                />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
-          
-          {/* Subject Performance */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            {/* Subject-wise Performance */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4">Subject Performance</h2>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={getSubjectPerformanceData()}
-                    margin={{ top: 10, right: 30, left: 0, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="subject" />
-                    <YAxis domain={[0, 100]} />
-                    <Tooltip />
-                    <Legend />
-                    <Bar
-                      dataKey="average"
-                      name="Average Performance (%)"
-                      fill="#8884d8"
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-            
-            {/* Skills Assessment */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4">Skills Assessment</h2>
-              {skillsData.length > 0 ? (
-                <div className="max-h-80 overflow-y-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="p-2 text-left">Skill</th>
-                        <th className="p-2 text-left">Proficiency</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {skillsData.map((skill, index) => (
-                        <tr key={index} className="border-b">
-                          <td className="p-2">{skill.skillName}</td>
-                          <td className="p-2">
-                            <span
-                              className={`px-2 py-1 rounded-full text-sm ${
-                                skill.proficiency === "Advanced"
-                                  ? "bg-green-100 text-green-800"
-                                  : skill.proficiency === "Intermediate"
-                                  ? "bg-blue-100 text-blue-800"
-                                  : "bg-yellow-100 text-yellow-800"
-                              }`}
-                            >
-                              {skill.proficiency}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="bg-yellow-50 p-4 rounded">
-                  <p className="text-yellow-700">No skills data available. Add your skills to get personalized recommendations.</p>
-                  <p className="mt-2 text-sm">Consider adding skills like:</p>
-                  <ul className="list-disc ml-5 mt-1 text-sm">
-                    <li>Programming Languages (Java, Python, etc.)</li>
-                    <li>Web Development (HTML, CSS, JavaScript)</li>
-                    <li>Database Management (SQL, MongoDB)</li>
-                    <li>Problem Solving</li>
-                    <li>Data Structures and Algorithms</li>
-                  </ul>
-                </div>
-              )}
-            </div>
-          </div>
-          
-          {/* Career Recommendations */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4">Career Recommendations</h2>
-              {careerRecommendations.length > 0 ? (
-                <ul className="space-y-2">
-                  {careerRecommendations.map((career, index) => (
-                    <li key={index} className="flex items-center">
-                      <span className="w-8 h-8 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center mr-3">
-                        {index + 1}
-                      </span>
-                      <span>{career}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p>No career recommendations available.</p>
-              )}
-              <div className="mt-6 p-4 bg-yellow-50 rounded-md">
-                <p className="text-sm text-yellow-800">
-                  <strong>Note:</strong> These recommendations are based on academic performance, skills, and extracurricular activities. Consider consulting with a career counselor for personalized guidance.
-                </p>
-              </div>
-            </div>
-            
-            {/* Extracurricular Activities */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4">Extracurricular Activities</h2>
-              {extracurricularData.length > 0 ? (
-                <div className="max-h-80 overflow-y-auto">
-                  {extracurricularData.map((activity, index) => (
-                    <div key={index} className="mb-4 pb-4 border-b last:border-0">
-                      <h3 className="font-medium">{activity.activityName}</h3>
-                      <p className="text-sm text-gray-600">
-                        {activity.type && <span>Type: {activity.type}</span>}
-                        {activity.position && <span> • Position: {activity.position}</span>}
-                      </p>
-                      {activity.achievements && (
-                        <p className="mt-1 text-sm">
-                          <strong>Achievements:</strong> {activity.achievements}
-                        </p>
-                      )}
-                      {activity.details && (
-                        <p className="mt-1 text-sm text-gray-700">{activity.details}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p>No extracurricular activities data available.</p>
-              )}
-            </div>
-          </div>
-          
-          {/* Subject Details */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 className="text-xl font-semibold mb-4">Academic Records</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="p-2 text-left">Subject</th>
-                    <th className="p-2 text-left">Code</th>
-                    <th className="p-2 text-left">Year</th>
-                    <th className="p-2 text-left">Marks</th>
-                    <th className="p-2 text-left">Total</th>
-                    <th className="p-2 text-left">Percentage</th>
-                    <th className="p-2 text-left">Grade</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {academicData.map((record, index) => (
-                    <tr key={index} className="border-b">
-                      <td className="p-2">{record.subject}</td>
-                      <td className="p-2">{record.code}</td>
-                      <td className="p-2">{record.year}</td>
-                      <td className="p-2">{record.marks}</td>
-                      <td className="p-2">{record.totalMarks}</td>
-                      <td className="p-2">
-                        {((record.marks / record.totalMarks) * 100).toFixed(2)}%
-                      </td>
-                      <td className="p-2">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs ${
-                            record.grade === "A+" || record.grade === "A"
-                              ? "bg-green-100 text-green-800"
-                              : record.grade === "B+" || record.grade === "B"
-                              ? "bg-blue-100 text-blue-800"
-                              : record.grade === "C+" || record.grade === "C"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {record.grade}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <OverallAnalysis/>
-        </>
-      )}
+        ) : (
+          <p className="text-purple-700">No academic data available.</p>
+        )}
+      </div>
       
-      {student && !academicData.length && !loading && (
-        <div className="bg-yellow-50 p-6 rounded-lg text-center">
-          <h3 className="text-xl font-medium text-yellow-800 mb-2">No Academic Data Available</h3>
-          <p className="text-yellow-700">
-            No academic records are available for this student. Records need to be added before
-            analysis can be performed.
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h2 className="text-xl font-semibold mb-4 text-purple-900">Skills Assessment</h2>
+        {skillsData.length > 0 ? (
+          <div className="max-h-80 overflow-y-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-purple-50">
+                  <th className="p-2 text-left text-purple-900">Skill</th>
+                  <th className="p-2 text-left text-purple-900">Proficiency</th>
+                </tr>
+              </thead>
+              <tbody>
+                {skillsData.map((skill, index) => (
+                  <tr key={index} className="border-b border-purple-100">
+                    <td className="p-2 text-purple-800">{skill.skillName}</td>
+                    <td className="p-2">
+                      <span
+                        className={`px-2 py-1 rounded-full text-sm ${
+                          skill.proficiency === "Advanced"
+                            ? "bg-purple-100 text-purple-900"
+                            : skill.proficiency === "Intermediate"
+                            ? "bg-purple-50 text-purple-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {skill.proficiency}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="bg-purple-50 p-4 rounded">
+            <p className="text-purple-800">No skills data available. Add your skills to get personalized recommendations.</p>
+            <p className="mt-2 text-sm text-purple-700">Consider adding skills like:</p>
+            <ul className="list-disc ml-5 mt-1 text-sm text-purple-700">
+              <li>Programming Languages (Java, Python, etc.)</li>
+              <li>Web Development (HTML, CSS, JavaScript)</li>
+              <li>Database Management (SQL, MongoDB)</li>
+              <li>Problem Solving</li>
+              <li>Data Structures and Algorithms</li>
+            </ul>
+          </div>
+        )}
+      </div>
+      
+      <div className="md:col-span-2 bg-white rounded-lg shadow-md p-6">
+        <h2 className="text-xl font-semibold mb-4 text-purple-900">Extracurricular Activities</h2>
+        {extracurricularData.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {extracurricularData.map((activity, index) => (
+              <div key={index} className="p-4 bg-purple-50 rounded-lg">
+                <h3 className="font-medium text-purple-900">{activity.activityName}</h3>
+                <p className="text-sm text-purple-700">
+                  {activity.type && <span>Type: {activity.type}</span>}
+                  {activity.position && <span> • Position: {activity.position}</span>}
+                </p>
+                {activity.achievements && (
+                  <p className="mt-2 text-sm text-purple-800">
+                    <strong>Achievements:</strong> {activity.achievements}
+                  </p>
+                )}
+                {activity.details && (
+                  <p className="mt-1 text-sm text-purple-600">{activity.details}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-purple-700">No extracurricular activities data available.</p>
+        )}
+      </div>
+    </div>
+  );
+  
+  // Feedback content
+ // Feedback content (continued from where it was cut off)
+const FeedbackContent = () => (
+  <div className="bg-white rounded-lg shadow-md p-6">
+    <h2 className="  text-xl font-semibold mb-6 text-purple-900">Personalized Feedback & Suggestions</h2>
+    {feedback ? (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Weak Subjects */}
+        <div className="bg-purple-50 p-4 rounded-lg">
+          <h3 className="font-medium text-purple-900 mb-2">Weak Subjects</h3>
+          <ul className="space-y-1 text-purple-800">
+            {feedback["Identify Weak Subjects"] && feedback["Identify Weak Subjects"].length > 0 ? (
+              feedback["Identify Weak Subjects"].map((subject, index) => (
+                <li key={index} className="flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {subject}
+                </li>
+              ))
+            ) : (
+              <li className="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                No weak subjects identified
+              </li>
+            )}
+          </ul>
+        </div>
+
+        {/* Study Techniques */}
+        <div className="bg-purple-50 p-4 rounded-lg">
+          <h3 className="font-medium text-purple-900 mb-2">Study Techniques</h3>
+          <ul className="space-y-1 text-purple-800">
+            {feedback["Suggest Study Techniques"] && feedback["Suggest Study Techniques"].map((technique, index) => (
+              <li key={index} className="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {technique}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Time Management Tips */}
+        <div className="bg-purple-50 p-4 rounded-lg">
+          <h3 className="font-medium text-purple-900 mb-2">Time Management</h3>
+          <ul className="space-y-1 text-purple-800">
+            {feedback["Time Management Tips"] && feedback["Time Management Tips"].map((tip, index) => (
+              <li key={index} className="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {tip}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Motivational Advice */}
+        <div className="bg-purple-50 p-4 rounded-lg">
+          <h3 className="font-medium text-purple-900 mb-2">Motivation</h3>
+          <ul className="space-y-1 text-purple-800">
+            {feedback["Motivational Advice"] && feedback["Motivational Advice"].map((advice, index) => (
+              <li key={index} className="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {advice}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Skill & Extracurricular Improvement */}
+        <div className="bg-purple-50 p-4 rounded-lg">
+          <h3 className="font-medium text-purple-900 mb-2">Skill Development</h3>
+          <ul className="space-y-1 text-purple-800">
+            {feedback["Skill & Extracurricular Improvement"] && feedback["Skill & Extracurricular Improvement"].map((improvement, index) => (
+              <li key={index} className="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {improvement}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Consistency & Practice */}
+        <div className="bg-purple-50 p-4 rounded-lg">
+          <h3 className="font-medium text-purple-900 mb-2">Consistency & Practice</h3>
+          <ul className="space-y-1 text-purple-800">
+            {feedback["Consistency & Practice"] && feedback["Consistency & Practice"].map((practice, index) => (
+              <li key={index} className="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {practice}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    ) : (
+      <div className="bg-purple-50 p-6 rounded-lg text-center">
+        <p className="text-purple-800">No feedback available. Complete your profile and add academic records to get personalized feedback.</p>
+      </div>
+    )}
+  </div>
+);
+
+// Career content
+const CareerContent = () => (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h2 className="text-xl font-semibold mb-4 text-purple-900">Career Recommendations</h2>
+      {careerRecommendations.length > 0 ? (
+        <div className="space-y-4">
+          {careerRecommendations.map((career, index) => (
+            <div key={index} className="p-4 bg-purple-50 rounded-lg flex items-center">
+              <div className="w-10 h-10 rounded-full bg-purple-200 flex items-center justify-center mr-4">
+                <span className="text-purple-800 font-medium">{index + 1}</span>
+              </div>
+              <div>
+                <h3 className="font-medium text-purple-900">{career}</h3>
+                <p className="text-sm text-purple-700">Based on your academic performance and skills</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-purple-700">No career recommendations available.</p>
+      )}
+    </div>
+    
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h2 className="text-xl font-semibold mb-4 text-purple-900">Skill Gaps</h2>
+      <div className="space-y-4">
+        {getWeakSubjects().length > 0 ? (
+          <div>
+            <p className="text-purple-800 mb-2">
+              Based on your performance, you might want to focus on improving these subjects:
+            </p>
+            <div className="space-y-2">
+              {getWeakSubjects().map((subject, index) => (
+                <div key={index} className="p-3 bg-purple-50 rounded-lg">
+                  <p className="font-medium text-purple-900">{subject}</p>
+                  <p className="text-sm text-purple-700">
+                    Improving in this area will strengthen your career prospects.
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <p className="text-purple-700">
+            Great job! You're performing well across all subjects. Keep up the good work!
+          </p>
+        )}
+        
+        <div className="mt-6">
+          <h3 className="font-medium text-purple-900 mb-2">Recommended Skills to Develop</h3>
+          <div className="space-y-2">
+            {skillsData.length < 5 && (
+              <p className="text-purple-800 mb-2">
+                Consider adding more skills to your profile for better career recommendations.
+              </p>
+            )}
+            <div className="p-3 bg-purple-50 rounded-lg">
+              <p className="font-medium text-purple-900">Technical Skills</p>
+              <p className="text-sm text-purple-700">
+                Programming, Data Structures, Algorithms, Database Management
+              </p>
+            </div>
+            <div className="p-3 bg-purple-50 rounded-lg">
+              <p className="font-medium text-purple-900">Soft Skills</p>
+              <p className="text-sm text-purple-700">
+                Communication, Teamwork, Problem-solving, Critical thinking
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div className="md:col-span-2 bg-white rounded-lg shadow-md p-6">
+      <h2 className="text-xl font-semibold mb-4 text-purple-900">Career Resources</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="p-4 bg-purple-50 rounded-lg">
+          <h3 className="font-medium text-purple-900 mb-1">Online Courses</h3>
+          <p className="text-sm text-purple-700">
+            Explore courses on platforms like Coursera, Udemy, and edX to enhance your skills.
           </p>
         </div>
-      )}
-      
-      {!student && !loading && (
-        <div className="bg-blue-50 p-6 rounded-lg text-center">
-          <h3 className="text-xl font-medium text-blue-800 mb-2">No Student Data</h3>
-          <p className="text-blue-700">
-            No student information is available. Please ensure you're properly logged in.
+        <div className="p-4 bg-purple-50 rounded-lg">
+          <h3 className="font-medium text-purple-900 mb-1">Internship Opportunities</h3>
+          <p className="text-sm text-purple-700">
+            Gain practical experience through internships in your field of interest.
           </p>
+        </div>
+        <div className="p-4 bg-purple-50 rounded-lg">
+          <h3 className="font-medium text-purple-900 mb-1">Career Counseling</h3>
+          <p className="text-sm text-purple-700">
+            Schedule a session with a career counselor for personalized guidance.
+          </p>
+        </div>
+        <div className="p-4 bg-purple-50 rounded-lg">
+          <h3 className="font-medium text-purple-900 mb-1">Industry Certifications</h3>
+          <p className="text-sm text-purple-700">
+            Explore relevant certifications to boost your resume and credibility.
+          </p>
+        </div>
+        <div className="p-4 bg-purple-50 rounded-lg">
+          <h3 className="font-medium text-purple-900 mb-1">Networking Events</h3>
+          <p className="text-sm text-purple-700">
+            Attend industry meetups and conferences to build professional connections.
+          </p>
+        </div>
+        <div className="p-4 bg-purple-50 rounded-lg">
+          <h3 className="font-medium text-purple-900 mb-1">Resume Building</h3>
+          <p className="text-sm text-purple-700">
+            Create a strong resume highlighting your skills, projects, and achievements.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+// Records content
+const RecordsContent = () => (
+  <div className="bg-white rounded-lg shadow-md p-6">
+    <h2 className="text-xl font-semibold mb-6 text-purple-900">Academic Records</h2>
+    {academicData.length > 0 ? (
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-purple-50">
+              <th className="p-3 text-left text-purple-900">Subject</th>
+              <th className="p-3 text-left text-purple-900">Code</th>
+              <th className="p-3 text-left text-purple-900">Year</th>
+              <th className="p-3 text-left text-purple-900">Semester</th>
+              <th className="p-3 text-left text-purple-900">Marks</th>
+              <th className="p-3 text-left text-purple-900">Total</th>
+              <th className="p-3 text-left text-purple-900">Percentage</th>
+              <th className="p-3 text-left text-purple-900">Grade</th>
+            </tr>
+          </thead>
+          <tbody>
+            {academicData.map((record, index) => {
+              const percentage = ((record.marks / record.totalMarks) * 100).toFixed(2);
+              return (
+                <tr 
+                  key={index} 
+                  className={`border-b border-purple-100 ${
+                    index % 2 === 0 ? "bg-white" : "bg-purple-50"
+                  }`}
+                >
+                  <td className="p-3 text-purple-800">{record.subject}</td>
+                  <td className="p-3 text-purple-800">{record.code}</td>
+                  <td className="p-3 text-purple-800">{record.year}</td>
+                  <td className="p-3 text-purple-800">{record.semester}</td>
+                  <td className="p-3 text-purple-800">{record.marks}</td>
+                  <td className="p-3 text-purple-800">{record.totalMarks}</td>
+                  <td className="p-3 text-purple-800">{percentage}%</td>
+                  <td className="p-3">
+                    <span
+                      className={`px-2 py-1 rounded-full text-sm ${
+                        percentage >= 90
+                          ? "bg-green-100 text-green-800"
+                          : percentage >= 75
+                          ? "bg-purple-100 text-purple-800"
+                          : percentage >= 60
+                          ? "bg-blue-100 text-blue-800"
+                          : percentage >= 50
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {record.grade}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    ) : (
+      <div className="bg-purple-50 p-6 rounded-lg text-center">
+        <p className="text-purple-800">No academic records available.</p>
+        <p className="text-sm text-purple-700 mt-2">
+          Add your academic records to get detailed analysis and feedback.
+        </p>
+      </div>
+    )}
+    
+    <div className="mt-8">
+      <h2 className="text-xl font-semibold mb-4 text-purple-900">Attendance Records</h2>
+      {attendanceData.length > 0 ? (
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-purple-50">
+                <th className="p-3 text-left text-purple-900">Date</th>
+                <th className="p-3 text-left text-purple-900">Subject</th>
+                <th className="p-3 text-left text-purple-900">Status</th>
+                <th className="p-3 text-left text-purple-900">Time In</th>
+                <th className="p-3 text-left text-purple-900">Time Out</th>
+                <th className="p-3 text-left text-purple-900">Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              {attendanceData.map((record, index) => (
+                <tr 
+                  key={index} 
+                  className={`border-b border-purple-100 ${
+                    index % 2 === 0 ? "bg-white" : "bg-purple-50"
+                  }`}
+                >
+                  <td className="p-3 text-purple-800">
+                    {record.date instanceof Date ? record.date.toLocaleDateString() : 'Invalid Date'}
+                  </td>
+                  <td className="p-3 text-purple-800">{record.subject}</td>
+                  <td className="p-3">
+                    <span
+                      className={`px-2 py-1 rounded-full text-sm ${
+                        record.status === "Present"
+                          ? "bg-green-100 text-green-800"
+                          : record.status === "Late"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : record.status === "Excused"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {record.status}
+                    </span>
+                  </td>
+                  <td className="p-3 text-purple-800">{record.timeIn || "-"}</td>
+                  <td className="p-3 text-purple-800">{record.timeOut || "-"}</td>
+                  <td className="p-3 text-purple-800">{record.note || "-"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="bg-purple-50 p-6 rounded-lg text-center">
+          <p className="text-purple-800">No attendance records available.</p>
         </div>
       )}
     </div>
-  );
-};
+  </div>
+);
+
+// Main component return
+return (
+  <div className="min-h-screen pt-24 bg-purple-50 py-8 px-4">
+    <div className="max-w-7xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-purple-900 mb-2">Academic Analysis</h1>
+        <p className="text-lg text-purple-700">
+          Comprehensive view of your academic performance and personalized recommendations
+        </p>
+      </div>
+      
+      {loading ? (
+        <div className="bg-white p-8 rounded-lg shadow text-center">
+          <p className="text-xl text-purple-800">Loading academic data...</p>
+        </div>
+      ) : error ? (
+        <div className="bg-white p-8 rounded-lg shadow text-center">
+          <p className="text-xl text-red-600">{error}</p>
+        </div>
+      ) : !student ? (
+        <div className="bg-white p-8 rounded-lg shadow text-center">
+          <p className="text-xl text-purple-800">No student profile found. Please complete your profile.</p>
+        </div>
+      ) : (
+        <>
+          <TabNavigation />
+          
+          <div className="mb-6">
+            {activeTab === 'overview' && <OverviewContent />}
+            {activeTab === 'performance' && <PerformanceContent />}
+            {activeTab === 'feedback' && <FeedbackContent />}
+            {activeTab === 'career' && <CareerContent />}
+            {activeTab === 'records' && <RecordsContent />}
+          </div>
+        </>
+      )}
+    </div>
+  </div>
+);
+
+}
 
 export default AcademicAnalysis;
+
+
+// import React, { useState, useEffect } from 'react';
+// import { 
+//   LineChart, 
+//   Line, 
+//   XAxis, 
+//   YAxis, 
+//   CartesianGrid, 
+//   Tooltip, 
+//   Legend, 
+//   ResponsiveContainer,
+//   BarChart,
+//   Bar
+// } from 'recharts';
+// import { useStudent } from '../context/userContext';
+// import { analyseReport } from '../utils/analyseReport';
+// import OverallAnalysis from './OverallAnalysis';
+// import { AnalysisPrompt } from '../prompts/prompt';
+
+// const AcademicAnalysis = () => {
+//   const { student } = useStudent();
+//   console.log(student)
+  
+//   const [academicData, setAcademicData] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState(null);
+//   const [skillsData, setSkillsData] = useState([]);
+//   const [attendanceData, setAttendanceData] = useState([]);
+//   const [subjectPerformance, setSubjectPerformance] = useState([]);
+//   const [careerRecommendations, setCareerRecommendations] = useState([]);
+//   const [extracurricularData, setExtracurricularData] = useState([]);
+//   const [feedback, setFeedback] = useState(null);
+  
+//   // Fetch student data when component mounts
+//   useEffect(() => {
+//     if (!student) {
+//       setError('No student data available');
+//       setLoading(false);
+//       return;
+//     }
+    
+//     setLoading(true);
+    
+//     try {
+//       // Transform academic records to match expected format
+//       const transformedAcademicRecords = student.academicRecords?.map(record => ({
+//         subject: record.subjectId?.subject || 'Unknown Subject',
+//         code: record.subjectId?.code || 'Unknown Code',
+//         year: record.subjectId?.year || new Date().getFullYear(),
+//         marks: record.marks,
+//         totalMarks: record.totalMarks,
+//         grade: record.grade || 'N/A',
+//         semester: record.subjectId?.semester || '1st'
+//       })) || [];
+      
+//       setAcademicData(transformedAcademicRecords);
+      
+//       // Transform skills data with defaults if empty
+//       const skills = student.skills || [];
+//       setSkillsData(skills);
+      
+//       // Transform attendance data
+//       const attendance = student.attendance?.map(record => ({
+//         date: new Date(record.date),
+//         status: record.status,
+//         subject: record.subject,
+//         timeIn: record.timeIn,
+//         timeOut: record.timeOut,
+//         note: record.note
+//       })) || [];
+//       setAttendanceData(attendance);
+      
+//       // Get extracurricular activities (empty array as default)
+//       const extracurricular = student.extracurricularActivities || [];
+//       setExtracurricularData(extracurricular);
+      
+//       // Process data for visualizations
+//       processAcademicData(transformedAcademicRecords);
+//       generateCareerRecommendations(
+//         transformedAcademicRecords,
+//         skills,
+//         extracurricular
+//       );
+      
+//       // Generate mock feedback if student exists since we might not be able to call the API
+//       if (student) {
+//         // Generate mock feedback if API call fails
+//         const mockFeedback = generateMockFeedback(transformedAcademicRecords, attendance, skills);
+        
+//         try {
+//           // Try the API call first
+//           let data = {
+//             "student": student
+//           };
+//           // analyseReport({academicData : student.academicData, skills : student.skills, extracurricular : student.extracurricularActivities}, AnalysisPrompt)
+//           //   .then((report) => {
+//           //     console.log(report);
+//           //     setFeedback(report[0] ? report[0] : mockFeedback);
+//           //     setLoading(false);
+//           //   })
+//           //   .catch((err) => {
+//           //     console.error("Error calling analyseReport:", err);
+//           //     setFeedback(mockFeedback);
+//           //     setLoading(false);
+//           //   });
+//         } catch (err) {
+//           console.error("Error in feedback generation:", err);
+//           setFeedback(mockFeedback);
+//           setLoading(false);
+//         }
+//       }
+      
+//       setLoading(false);
+//     } catch (err) {
+//       setError('Failed to process student data: ' + err.message);
+//       setLoading(false);
+//       console.error(err);
+//     }
+//   }, [student]);
+  
+//   // Generate mock feedback for testing
+//   const generateMockFeedback = (academicData, attendanceData, skills) => {
+//     // Find weak subjects (those with marks below 70%)
+//     const weakSubjects = academicData
+//       .filter(record => (record.marks / record.totalMarks) * 100 < 70)
+//       .map(record => record.subject);
+    
+//     // Calculate attendance rate
+//     const attendanceRate = attendanceData.filter(record => 
+//       record.status === 'Present').length / (attendanceData.length || 1) * 100;
+    
+//     return {
+//       "Identify Weak Subjects": weakSubjects.length > 0 ? weakSubjects : ["No weak subjects identified"],
+//       "Suggest Study Techniques": [
+//         "Use spaced repetition for better recall",
+//         "Try the Pomodoro technique for focused study sessions",
+//         "Create mind maps to connect concepts"
+//       ],
+//       "Time Management Tips": [
+//         "Create a weekly study schedule",
+//         "Set specific goals for each study session",
+//         attendanceRate < 90 ? "Improve class attendance" : "Maintain your excellent attendance"
+//       ],
+//       "Motivational Advice": [
+//         "Focus on progress, not perfection",
+//         "Break large tasks into smaller, manageable chunks",
+//         "Celebrate small wins and achievements"
+//       ],
+//       "Skill & Extracurricular Improvement": [
+//         "Consider joining coding competitions",
+//         "Develop soft skills through group projects",
+//         "Explore internship opportunities"
+//       ],
+//       "Consistency & Practice": [
+//         "Review class materials weekly",
+//         "Practice solving problems regularly",
+//         "Form or join study groups for difficult subjects"
+//       ]
+//     };
+//   };
+  
+//   // Process academic data for visualization
+//   const processAcademicData = (data) => {
+//     // Group by subject for subject-wise performance analysis
+//     const subjectGroups = {};
+    
+//     data.forEach(record => {
+//       if (!subjectGroups[record.subject]) {
+//         subjectGroups[record.subject] = [];
+//       }
+      
+//       const percentage = (record.marks / record.totalMarks) * 100;
+//       subjectGroups[record.subject].push({
+//         year: record.year,
+//         percentage: percentage.toFixed(2),
+//         grade: record.grade
+//       });
+//     });
+    
+//     // Convert to array format for charts
+//     const subjectPerformanceData = Object.keys(subjectGroups).map(subject => {
+//       return {
+//         subject,
+//         data: subjectGroups[subject].sort((a, b) => a.year - b.year),
+//         averagePerformance: (
+//           subjectGroups[subject].reduce((sum, item) => sum + parseFloat(item.percentage), 0) / 
+//           subjectGroups[subject].length
+//         ).toFixed(2)
+//       };
+//     });
+    
+//     setSubjectPerformance(subjectPerformanceData);
+//   };
+  
+//   // Generate career recommendations based on academic performance, skills, and extracurricular activities
+//   const generateCareerRecommendations = (academics, skills, extracurricular) => {
+//     // Default recommendations for MCA students
+//     let recommendations = [
+//       "Software Developer",
+//       "System Analyst",
+//       "Data Scientist",
+//       "Web Developer",
+//       "Database Administrator"
+//     ];
+    
+//     // This is a simplified recommendation engine - in a real system, this would be more sophisticated
+//     if (academics.length > 0) {
+//       // Get top performing subjects
+//       const subjectPercentages = {};
+//       academics.forEach(record => {
+//         const percentage = (record.marks / record.totalMarks) * 100;
+//         if (!subjectPercentages[record.subject]) {
+//           subjectPercentages[record.subject] = [];
+//         }
+//         subjectPercentages[record.subject].push(percentage);
+//       });
+      
+//       const topSubjects = Object.entries(subjectPercentages)
+//         .map(([subject, percentages]) => ({
+//           subject,
+//           average: percentages.reduce((sum, p) => sum + p, 0) / percentages.length
+//         }))
+//         .sort((a, b) => b.average - a.average)
+//         .slice(0, 3);
+      
+//       // Simple career mapping for MCA subjects
+//       const careerMap = {
+//         "Computer Fundamentals": ["System Analyst", "Technical Consultant", "IT Support Specialist"],
+//         "Programming Languages": ["Software Developer", "Mobile App Developer", "Game Developer"],
+//         "Database Management": ["Database Administrator", "Data Engineer", "Business Intelligence Analyst"],
+//         "Data Structures": ["Algorithm Engineer", "Software Developer", "Backend Developer"],
+//         "Web Development": ["Web Developer", "Frontend Developer", "Full Stack Developer"],
+//         "Networking": ["Network Administrator", "Security Analyst", "Cloud Engineer"],
+//         "Operating Systems": ["System Administrator", "DevOps Engineer", "Technical Support Specialist"],
+//         "Software Engineering": ["Software Architect", "Project Manager", "Quality Assurance Engineer"],
+//         "Machine Learning": ["Data Scientist", "AI Engineer", "Machine Learning Engineer"],
+//         "Cloud Computing": ["Cloud Architect", "Cloud Developer", "Solutions Architect"]
+//       };
+      
+//       // Update recommendations based on top subjects
+//       const subjectBasedRecommendations = [];
+//       topSubjects.forEach(subject => {
+//         const subjectName = subject.subject;
+//         // Find the closest match in our careerMap
+//         const matchingKey = Object.keys(careerMap).find(key => 
+//           subjectName.toLowerCase().includes(key.toLowerCase()) || 
+//           key.toLowerCase().includes(subjectName.toLowerCase())
+//         );
+        
+//         if (matchingKey && careerMap[matchingKey]) {
+//           careerMap[matchingKey].forEach(career => {
+//             if (!subjectBasedRecommendations.includes(career)) {
+//               subjectBasedRecommendations.push(career);
+//             }
+//           });
+//         }
+//       });
+      
+//       if (subjectBasedRecommendations.length > 0) {
+//         recommendations = subjectBasedRecommendations;
+//       }
+//     }
+    
+//     // Get skills-based recommendations if skills exist
+//     if (skills.length > 0) {
+//       const advancedSkills = skills.filter(skill => 
+//         skill.proficiency === "Advanced").map(skill => skill.skillName);
+        
+//       if (advancedSkills.includes("Programming") || advancedSkills.includes("Coding")) {
+//         recommendations = ["Software Engineer", "Web Developer", "Mobile App Developer", ...recommendations];
+//       }
+//     }
+    
+//     // Get extracurricular-based recommendations if they exist
+//     if (extracurricular.length > 0) {
+//       const significantActivities = extracurricular
+//         .filter(activity => activity.achievements)
+//         .map(activity => activity.activityName);
+      
+//       if (significantActivities.includes("Debate") || significantActivities.includes("Public Speaking")) {
+//         recommendations = ["Technical Trainer", "IT Consultant", "Project Manager", ...recommendations];
+//       }
+//     }
+    
+//     // Remove duplicates and limit to top 5
+//     recommendations = [...new Set(recommendations)].slice(0, 5);
+//     setCareerRecommendations(recommendations);
+//   };
+  
+//   // Calculate attendance statistics
+//   const calculateAttendanceStats = () => {
+//     if (!attendanceData.length) return { present: 0, absent: 0, late: 0, excused: 0, percentage: 0 };
+    
+//     const stats = attendanceData.reduce((acc, record) => {
+//       const status = record.status?.toLowerCase() || 'unknown';
+//       acc[status] = (acc[status] || 0) + 1;
+//       return acc;
+//     }, { present: 0, absent: 0, late: 0, excused: 0 });
+    
+//     const totalDays = attendanceData.length;
+//     const percentage = ((stats.present + (stats.late || 0)) / totalDays * 100).toFixed(2);
+    
+//     return { ...stats, percentage, totalDays };
+//   };
+  
+//   const attendanceStats = calculateAttendanceStats();
+  
+//   // Generate performance data for charts
+//   const getPerformanceTrendData = () => {
+//     // Group by year and calculate average performance
+//     const yearlyPerformance = {};
+    
+//     academicData.forEach(record => {
+//       if (!yearlyPerformance[record.year]) {
+//         yearlyPerformance[record.year] = { totalPercentage: 0, count: 0 };
+//       }
+      
+//       const percentage = (record.marks / record.totalMarks) * 100;
+//       yearlyPerformance[record.year].totalPercentage += percentage;
+//       yearlyPerformance[record.year].count += 1;
+//     });
+    
+//     // Convert to array and calculate averages
+//     return Object.keys(yearlyPerformance)
+//       .sort()
+//       .map(year => ({
+//         year,
+//         averagePercentage: (
+//           yearlyPerformance[year].totalPercentage / yearlyPerformance[year].count
+//         ).toFixed(2)
+//       }));
+//   };
+  
+//   // Format subject performance for chart
+//   const getSubjectPerformanceData = () => {
+//     return subjectPerformance.map(subject => ({
+//       subject: subject.subject,
+//       average: parseFloat(subject.averagePerformance)
+//     }));
+//   };
+  
+//   // Get weak subjects (subjects with below average performance)
+//   const getWeakSubjects = () => {
+//     if (!subjectPerformance.length) return [];
+    
+//     const overallAverage = subjectPerformance.reduce(
+//       (sum, subject) => sum + parseFloat(subject.averagePerformance), 
+//       0
+//     ) / subjectPerformance.length;
+    
+//     return subjectPerformance
+//       .filter(subject => parseFloat(subject.averagePerformance) < overallAverage)
+//       .map(subject => subject.subject);
+//   };
+  
+//   if (loading) {
+//     return <div className="p-8 text-center">Loading academic analysis...</div>;
+//   }
+  
+//   return (
+//     <div className="p-4 md:p-8 bg-amber-300">
+//       <h1 className="text-3xl font-bold pt-20 mb-6">Academic Analysis</h1>
+      
+//       {error && (
+//         <div className="bg-red-100 text-red-700 p-4 rounded-md mb-6">
+//           {error}
+//         </div>
+//       )}
+      
+//       {student && (
+//         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 ">
+//           {/* Student Profile Card */}
+//           {/* <div className="bg-white rounded-lg shadow-md p-6">
+//             <h2 className="text-xl font-semibold mb-4">Student Profile</h2>
+//             <div className="flex items-center mb-4">
+//               <div className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 mr-4">
+//                 {student.profilePic ? (
+//                   <img 
+//                     src={student.profilePic} 
+//                     alt={student.name} 
+//                     className="w-full h-full rounded-full object-cover" 
+//                   />
+//                 ) : (
+//                   <span className="text-2xl">{student.name.charAt(0)}</span>
+//                 )}
+//               </div>
+//               <div>
+//                 <h3 className="text-lg font-medium">{student.name}</h3>
+//                 <p className="text-gray-600">{student.enrollment}</p>
+//               </div>
+//             </div>
+//             <div className="grid grid-cols-2 gap-4">
+//               <div>
+//                 <p className="text-gray-600">Course:</p>
+//                 <p className="font-medium">{student.course?.courseName || 'MCA'}</p>
+//               </div>
+//               <div>
+//                 <p className="text-gray-600">Semester:</p>
+//                 <p className="font-medium">{student.semester}</p>
+//               </div>
+//               <div>
+//                 <p className="text-gray-600">Age:</p>
+//                 <p className="font-medium">{student.age}</p>
+//               </div>
+//               <div>
+//                 <p className="text-gray-600">Email:</p>
+//                 <p className="font-medium">{student.email}</p>
+//               </div>
+//               <div>
+//                 <p className="text-gray-600">Phone:</p>
+//                 <p className="font-medium">{student.phone || "N/A"}</p>
+//               </div>
+//             </div>
+//           </div> */}
+          
+//           {/* Overall Performance Card */}
+//           <div className="bg-white rounded-lg shadow-md p-6">
+//             <h2 className="text-xl font-semibold mb-4">Overall Performance</h2>
+//             {academicData.length > 0 ? (
+//               <>
+//                 <div className="mb-4">
+//                   <p className="text-gray-600">Average Grade:</p>
+//                   <p className="text-3xl font-bold">
+//                     {(academicData.reduce((sum, record) => {
+//                       // For MCA course, we're using percentage directly as grading might be different
+//                       const percentage = (record.marks / record.totalMarks) * 100;
+//                       // Convert percentage to a 10-point scale
+//                       return sum + (percentage / 10);
+//                     }, 0) / academicData.length).toFixed(2)}
+//                   </p>
+//                 </div>
+//                 <div className="mb-4">
+//                   <p className="text-gray-600">Average Percentage:</p>
+//                   <p className="text-3xl font-bold">
+//                     {(academicData.reduce((sum, record) => {
+//                       return sum + ((record.marks / record.totalMarks) * 100);
+//                     }, 0) / academicData.length).toFixed(2)}%
+//                   </p>
+//                 </div>
+//                 <div>
+//                   <p className="text-gray-600">Total Subjects:</p>
+//                   <p className="font-medium">
+//                     {new Set(academicData.map(record => record.subject)).size}
+//                   </p>
+//                 </div>
+//               </>
+//             ) : (
+//               <p>No academic data available.</p>
+//             )}
+//           </div>
+          
+//           {/* Attendance Card */}
+//           <div className="bg-white rounded-lg shadow-md p-6">
+//             <h2 className="text-xl font-semibold mb-4">Attendance Summary</h2>
+//             {attendanceData.length > 0 ? (
+//               <>
+//                 <div className="mb-4">
+//                   <p className="text-gray-600">Attendance Rate:</p>
+//                   <p className="text-3xl font-bold">{attendanceStats.percentage}%</p>
+//                 </div>
+//                 <div className="grid grid-cols-2 gap-4">
+//                   <div>
+//                     <p className="text-gray-600">Present:</p>
+//                     <p className="font-medium">{attendanceStats.present} days</p>
+//                   </div>
+//                   <div>
+//                     <p className="text-gray-600">Absent:</p>
+//                     <p className="font-medium">{attendanceStats.absent} days</p>
+//                   </div>
+//                   <div>
+//                     <p className="text-gray-600">Late:</p>
+//                     <p className="font-medium">{attendanceStats.late || 0} days</p>
+//                   </div>
+//                   <div>
+//                     <p className="text-gray-600">Excused:</p>
+//                     <p className="font-medium">{attendanceStats.excused || 0} days</p>
+//                   </div>
+//                 </div>
+//               </>
+//             ) : (
+//               <p>No attendance data available.</p>
+//             )}
+//           </div>
+//         </div>
+//       )}
+      
+//       {student && feedback && (
+//   <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+//     <h2 className="text-xl font-semibold mb-4">Personalized Feedback & Suggestions</h2>
+//     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+//       {/* Weak Subjects */}
+//       <div className="bg-blue-50 p-4 rounded-md">
+//         <h3 className="font-medium text-blue-800 mb-2">Identify Weak Subjects</h3>
+//         <ul className="list-disc pl-5 text-blue-700 space-y-1">
+//           {feedback && feedback["Identify Weak Subjects"] && feedback["Identify Weak Subjects"].length > 0 ? (
+//             feedback["Identify Weak Subjects"].map((subject, index) => (
+//               <li key={index}>{subject}</li>
+//             ))
+//           ) : (
+//             <li>No weak subjects identified. Keep up the good work!</li>
+//           )}
+//         </ul>
+//       </div>
+
+//       {/* Study Techniques */}
+//       <div className="bg-green-50 p-4 rounded-md">
+//         <h3 className="font-medium text-green-800 mb-2">Study Techniques</h3>
+//         <ul className="list-disc pl-5 text-green-700 space-y-1">
+//           {feedback && feedback["Suggest Study Techniques"] && feedback["Suggest Study Techniques"].length > 0 ? (
+//             feedback["Suggest Study Techniques"].map((technique, index) => (
+//               <li key={index}>{technique}</li>
+//             ))
+//           ) : (
+//             <li>No study techniques suggested. Consider exploring different learning methods.</li>
+//           )}
+//         </ul>
+//       </div>
+
+//       {/* Time Management Tips */}
+//       <div className="bg-purple-50 p-4 rounded-md">
+//         <h3 className="font-medium text-purple-800 mb-2">Time Management Tips</h3>
+//         <ul className="list-disc pl-5 text-purple-700 space-y-1">
+//           {feedback && feedback["Time Management Tips"] && feedback["Time Management Tips"].length > 0 ? (
+//             feedback["Time Management Tips"].map((tip, index) => (
+//               <li key={index}>{tip}</li>
+//             ))
+//           ) : (
+//             <li>No time management tips provided. Consider setting aside dedicated study time.</li>
+//           )}
+//         </ul>
+//       </div>
+
+//       {/* Motivational Advice */}
+//       <div className="bg-yellow-50 p-4 rounded-md">
+//         <h3 className="font-medium text-yellow-800 mb-2">Motivational Advice</h3>
+//         <ul className="list-disc pl-5 text-yellow-700 space-y-1">
+//           {feedback && feedback["Motivational Advice"] && feedback["Motivational Advice"].length > 0 ? (
+//             feedback["Motivational Advice"].map((advice, index) => (
+//               <li key={index}>{advice}</li>
+//             ))
+//           ) : (
+//             <li>No motivational advice provided. Remember to celebrate your achievements and stay positive!</li>
+//           )}
+//         </ul>
+//       </div>
+
+//       {/* Skills & Extracurricular Improvement */}
+//       <div className="bg-red-50 p-4 rounded-md">
+//         <h3 className="font-medium text-red-800 mb-2">Skill & Extracurricular Improvement</h3>
+//         <ul className="list-disc pl-5 text-red-700 space-y-1">
+//           {feedback && feedback["Skill & Extracurricular Improvement"] && feedback["Skill & Extracurricular Improvement"].length > 0 ? (
+//             feedback["Skill & Extracurricular Improvement"].map((improvement, index) => (
+//               <li key={index}>{improvement}</li>
+//             ))
+//           ) : (
+//             <li>No skills or extracurricular improvements suggested. Consider exploring new hobbies or interests.</li>
+//           )}
+//         </ul>
+//       </div>
+
+//       {/* Consistency & Practice */}
+//       <div className="bg-indigo-50 p-4 rounded-md">
+//         <h3 className="font-medium text-indigo-800 mb-2">Consistency & Practice</h3>
+//         <ul className="list-disc pl-5 text-indigo-700 space-y-1">
+//           {feedback && feedback["Consistency & Practice"] && feedback["Consistency & Practice"].length > 0 ? (
+//             feedback["Consistency & Practice"].map((practice, index) => (
+//               <li key={index}>{practice}</li>
+//             ))
+//           ) : (
+//             <li>No consistency or practice tips provided. Consider setting aside dedicated time for review and practice.</li>
+//           )}
+//         </ul>
+//       </div>
+//     </div>
+//   </div>
+// )}
+      
+//       {student && academicData.length > 0 && (
+//         <>
+//           {/* Performance Trends */}
+//           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+//             <h2 className="text-xl font-semibold mb-4">Performance Trends</h2>
+//             <div className="h-80">
+//               <ResponsiveContainer width="100%" height="100%">
+//                 <LineChart
+//                   data={getPerformanceTrendData()}
+//                   margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+//                 >
+//                   <CartesianGrid strokeDasharray="3 3" />
+//                   <XAxis dataKey="year" />
+//                   <YAxis domain={[0, 100]} />
+//                   <Tooltip />
+//                   <Legend />
+//                   <Line
+//                     type="monotone"
+//                     dataKey="averagePercentage"
+//                     name="Average Percentage"
+//                     stroke="#8884d8"
+//                     strokeWidth={2}
+//                     activeDot={{ r: 8 }}
+//                   />
+//                 </LineChart>
+//               </ResponsiveContainer>
+//             </div>
+//           </div>
+          
+//           {/* Subject Performance */}
+//           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+//             {/* Subject-wise Performance */}
+//             <div className="bg-white rounded-lg shadow-md p-6">
+//               <h2 className="text-xl font-semibold mb-4">Subject Performance</h2>
+//               <div className="h-80">
+//                 <ResponsiveContainer width="100%" height="100%">
+//                   <BarChart
+//                     data={getSubjectPerformanceData()}
+//                     margin={{ top: 10, right: 30, left: 0, bottom: 5 }}
+//                   >
+//                     <CartesianGrid strokeDasharray="3 3" />
+//                     <XAxis dataKey="subject" />
+//                     <YAxis domain={[0, 100]} />
+//                     <Tooltip />
+//                     <Legend />
+//                     <Bar
+//                       dataKey="average"
+//                       name="Average Performance (%)"
+//                       fill="#8884d8"
+//                     />
+//                   </BarChart>
+//                 </ResponsiveContainer>
+//               </div>
+//             </div>
+            
+//             {/* Skills Assessment */}
+//             <div className="bg-white rounded-lg shadow-md p-6">
+//               <h2 className="text-xl font-semibold mb-4">Skills Assessment</h2>
+//               {skillsData.length > 0 ? (
+//                 <div className="max-h-80 overflow-y-auto">
+//                   <table className="w-full">
+//                     <thead>
+//                       <tr className="bg-gray-100">
+//                         <th className="p-2 text-left">Skill</th>
+//                         <th className="p-2 text-left">Proficiency</th>
+//                       </tr>
+//                     </thead>
+//                     <tbody>
+//                       {skillsData.map((skill, index) => (
+//                         <tr key={index} className="border-b">
+//                           <td className="p-2">{skill.skillName}</td>
+//                           <td className="p-2">
+//                             <span
+//                               className={`px-2 py-1 rounded-full text-sm ${
+//                                 skill.proficiency === "Advanced"
+//                                   ? "bg-green-100 text-green-800"
+//                                   : skill.proficiency === "Intermediate"
+//                                   ? "bg-blue-100 text-blue-800"
+//                                   : "bg-yellow-100 text-yellow-800"
+//                               }`}
+//                             >
+//                               {skill.proficiency}
+//                             </span>
+//                           </td>
+//                         </tr>
+//                       ))}
+//                     </tbody>
+//                   </table>
+//                 </div>
+//               ) : (
+//                 <div className="bg-yellow-50 p-4 rounded">
+//                   <p className="text-yellow-700">No skills data available. Add your skills to get personalized recommendations.</p>
+//                   <p className="mt-2 text-sm">Consider adding skills like:</p>
+//                   <ul className="list-disc ml-5 mt-1 text-sm">
+//                     <li>Programming Languages (Java, Python, etc.)</li>
+//                     <li>Web Development (HTML, CSS, JavaScript)</li>
+//                     <li>Database Management (SQL, MongoDB)</li>
+//                     <li>Problem Solving</li>
+//                     <li>Data Structures and Algorithms</li>
+//                   </ul>
+//                 </div>
+//               )}
+//             </div>
+//           </div>
+          
+//           {/* Career Recommendations */}
+//           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+//             <div className="bg-white rounded-lg shadow-md p-6">
+//               <h2 className="text-xl font-semibold mb-4">Career Recommendations</h2>
+//               {careerRecommendations.length > 0 ? (
+//                 <ul className="space-y-2">
+//                   {careerRecommendations.map((career, index) => (
+//                     <li key={index} className="flex items-center">
+//                       <span className="w-8 h-8 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center mr-3">
+//                         {index + 1}
+//                       </span>
+//                       <span>{career}</span>
+//                     </li>
+//                   ))}
+//                 </ul>
+//               ) : (
+//                 <p>No career recommendations available.</p>
+//               )}
+//               <div className="mt-6 p-4 bg-yellow-50 rounded-md">
+//                 <p className="text-sm text-yellow-800">
+//                   <strong>Note:</strong> These recommendations are based on academic performance, skills, and extracurricular activities. Consider consulting with a career counselor for personalized guidance.
+//                 </p>
+//               </div>
+//             </div>
+            
+//             {/* Extracurricular Activities */}
+//             <div className="bg-white rounded-lg shadow-md p-6">
+//               <h2 className="text-xl font-semibold mb-4">Extracurricular Activities</h2>
+//               {extracurricularData.length > 0 ? (
+//                 <div className="max-h-80 overflow-y-auto">
+//                   {extracurricularData.map((activity, index) => (
+//                     <div key={index} className="mb-4 pb-4 border-b last:border-0">
+//                       <h3 className="font-medium">{activity.activityName}</h3>
+//                       <p className="text-sm text-gray-600">
+//                         {activity.type && <span>Type: {activity.type}</span>}
+//                         {activity.position && <span> • Position: {activity.position}</span>}
+//                       </p>
+//                       {activity.achievements && (
+//                         <p className="mt-1 text-sm">
+//                           <strong>Achievements:</strong> {activity.achievements}
+//                         </p>
+//                       )}
+//                       {activity.details && (
+//                         <p className="mt-1 text-sm text-gray-700">{activity.details}</p>
+//                       )}
+//                     </div>
+//                   ))}
+//                 </div>
+//               ) : (
+//                 <p>No extracurricular activities data available.</p>
+//               )}
+//             </div>
+//           </div>
+          
+//           {/* Subject Details */}
+//           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+//             <h2 className="text-xl font-semibold mb-4">Academic Records</h2>
+//             <div className="overflow-x-auto">
+//               <table className="w-full">
+//                 <thead>
+//                   <tr className="bg-gray-100">
+//                     <th className="p-2 text-left">Subject</th>
+//                     <th className="p-2 text-left">Code</th>
+//                     <th className="p-2 text-left">Year</th>
+//                     <th className="p-2 text-left">Marks</th>
+//                     <th className="p-2 text-left">Total</th>
+//                     <th className="p-2 text-left">Percentage</th>
+//                     <th className="p-2 text-left">Grade</th>
+//                   </tr>
+//                 </thead>
+//                 <tbody>
+//                   {academicData.map((record, index) => (
+//                     <tr key={index} className="border-b">
+//                       <td className="p-2">{record.subject}</td>
+//                       <td className="p-2">{record.code}</td>
+//                       <td className="p-2">{record.year}</td>
+//                       <td className="p-2">{record.marks}</td>
+//                       <td className="p-2">{record.totalMarks}</td>
+//                       <td className="p-2">
+//                         {((record.marks / record.totalMarks) * 100).toFixed(2)}%
+//                       </td>
+//                       <td className="p-2">
+//                         <span
+//                           className={`px-2 py-1 rounded-full text-xs ${
+//                             record.grade === "A+" || record.grade === "A"
+//                               ? "bg-green-100 text-green-800"
+//                               : record.grade === "B+" || record.grade === "B"
+//                               ? "bg-blue-100 text-blue-800"
+//                               : record.grade === "C+" || record.grade === "C"
+//                               ? "bg-yellow-100 text-yellow-800"
+//                               : "bg-red-100 text-red-800"
+//                           }`}
+//                         >
+//                           {record.grade}
+//                         </span>
+//                       </td>
+//                     </tr>
+//                   ))}
+//                 </tbody>
+//               </table>
+//             </div>
+//           </div>
+
+//           {/* <OverallAnalysis/> */}
+//         </>
+//       )}
+      
+//       {student && !academicData.length && !loading && (
+//         <div className="bg-yellow-50 p-6 rounded-lg text-center">
+//           <h3 className="text-xl font-medium text-yellow-800 mb-2">No Academic Data Available</h3>
+//           <p className="text-yellow-700">
+//             No academic records are available for this student. Records need to be added before
+//             analysis can be performed.
+//           </p>
+//         </div>
+//       )}
+      
+//       {!student && !loading && (
+//         <div className="bg-blue-50 p-6 rounded-lg text-center">
+//           <h3 className="text-xl font-medium text-blue-800 mb-2">No Student Data</h3>
+//           <p className="text-blue-700">
+//             No student information is available. Please ensure you're properly logged in.
+//           </p>
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default AcademicAnalysis;
 
 
 // import React, { useState, useEffect } from 'react';

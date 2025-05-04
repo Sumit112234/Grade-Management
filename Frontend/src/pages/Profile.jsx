@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { LogOut, Plus, Edit, Save, X, Camera, Search, Users, Book, FileText, Calendar } from 'lucide-react';
 import { useStudent } from '../context/userContext';
 import { updateStudent } from '../utils/userHandler';
+import { toast } from 'react-toastify';
 
 // Add Skill Modal Component
 const AddSkillModal = ({ isOpen, onClose, onSave }) => {
@@ -446,7 +447,7 @@ const StudentProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('skills');
-  const { student } = useStudent();
+  const { student , logout } = useStudent();
   const [studentData, setStudentData] = useState(null);
 
   const [isSkillModalOpen, setIsSkillModalOpen] = useState(false);
@@ -677,6 +678,29 @@ const StudentProfile = () => {
     </button>
   );
 
+  
+   const handleLogout = async() => {
+  
+      logout()
+      .then((status)=>{
+       
+        toast.success('Logout successful!');
+  
+        setTimeout(() => {
+          if(status)
+            navigate('/login');
+          
+        }, 1500);
+      })
+      .catch(()=>{
+        toast.error('Logout failed!');
+       
+      })
+  
+     
+  
+    };
+
   return (
     <motion.div 
       className="container mx-auto p-4"
@@ -794,7 +818,7 @@ const StudentProfile = () => {
                 transition={{ delay: 0.9 }}
               >
                 <button
-                  onClick={() => navigate('/')}
+                  onClick={handleLogout}
                   className="w-full py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition flex items-center justify-center"
                 >
                   <LogOut className="w-4 h-4 mr-2" />
@@ -1068,13 +1092,14 @@ const StudentProfile = () => {
                           else if (percentage >= 60) grade = 'C';
                           else if (percentage >= 50) grade = 'D';
                           
+                          // {console.log(record)}
                           return (
                             <motion.tr 
                               key={index}
                               variants={itemVariants}
                               className="hover:bg-purple-50"
                             >
-                              <td className="py-3 px-4">{record.subject}</td>
+                              <td className="py-3 px-4">{record?.subjectId.subject}</td>
                               <td className="py-3 px-4">{record.marks}</td>
                               <td className="py-3 px-4">{record.totalMarks}</td>
                               <td className="py-3 px-4">{percentage.toFixed(2)}%</td>
